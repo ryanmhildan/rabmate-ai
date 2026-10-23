@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* Design tokens. Components use the Tailwind color names below (bg-surface, text-muted, …). */
+:root {
+  --background: #f6f7f9;
+  --surface: #ffffff;
+  --surface-muted: #f1f3f6;
+  --border: #e2e5ea;
+  --foreground: #161a20;
+  --muted: #5d6673;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e7eefc;
+  --success: #15803d;
+  --success-soft: #e6f4ea;
+  --warning: #b45309;
+  --warning-soft: #fdf3e2;
+  --danger: #b91c1c;
+  --danger-soft: #fbe9e9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0e1116;
+    --surface: #161a21;
+    --surface-muted: #1d222b;
+    --border: #2a303b;
+    --foreground: #e8eaee;
+    --muted: #9aa3b0;
+    --primary: #6b9cff;
+    --primary-foreground: #0b1020;
+    --primary-soft: #1a2640;
+    --success: #4ade80;
+    --success-soft: #13261a;
+    --warning: #fbbf24;
+    --warning-soft: #2a2110;
+    --danger: #f87171;
+    --danger-soft: #2c1515;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans:
+    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Tabular figures keep money columns aligned. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
