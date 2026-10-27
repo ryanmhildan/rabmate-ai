@@ -98,10 +98,10 @@ function NewRabForm({ onClose, project }: Omit<Props, "open">) {
         >
           {(a) => (
             <Select {...a} {...register("project_id")} disabled={projects.isPending}>
-              <option value="">{projects.isPending ? "Memuat proyek…" : "— Pilih proyek —"}</option>
+              <option value="">{projects.isPending ? "Memuat proyek…" : "Pilih proyek"}</option>
               {projects.data?.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.number} — {p.name}
+                  {p.number} · {p.name}
                 </option>
               ))}
             </Select>

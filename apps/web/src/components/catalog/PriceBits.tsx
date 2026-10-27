@@ -5,7 +5,7 @@ import { VERIFICATION_STATUS } from "@/lib/labels";
 import type { PriceObservation } from "@/lib/types";
 
 export function PriceWithStatus({ observation }: { observation: PriceObservation | null }) {
-  if (!observation) return <span className="text-muted">—</span>;
+  if (!observation) return <span className="text-muted">-</span>;
   const status = VERIFICATION_STATUS[observation.verification_status];
   return (
     <div className="space-y-0.5">

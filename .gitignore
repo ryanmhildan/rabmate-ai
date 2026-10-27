@@ -38,3 +38,9 @@ Thumbs.db
 
 # Master prompt (dokumen pribadi pemilik proyek; tidak dipublikasikan)
 PROMPT.txt
+
+# Alat & instruksi agen AI lokal (bukan bagian aplikasi)
+.agents/
+AGENTS.md
+CLAUDE.md
+.claude/

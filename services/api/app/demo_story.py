@@ -204,7 +204,7 @@ def _play(actors: dict[Role, _Actor], today: date) -> DemoStory:
             **{k: v for k, v in settings.items() if k not in ("version", "updated_at")},
             "version": settings["version"],
             "tagline": "Kontraktor umum & pengadaan (Demo)",
-            "footer_text": "Dokumen contoh dari data demo RABmate — bukan dokumen sah.",
+            "footer_text": "Dokumen contoh dari data demo RABmate, bukan dokumen sah.",
             "show_price_sources": True,
         },
     )
@@ -353,7 +353,7 @@ def _play(actors: dict[Role, _Actor], today: date) -> DemoStory:
         f"/bast/{bast['id']}",
         json={
             "version": bast["version"],
-            "title": "BAST Tahap 1 — Material Struktur (Demo)",
+            "title": "BAST Tahap 1: Material Struktur (Demo)",
             "handover_date": str(today),
             "location": "Gedung Arsip, Bandung (Demo)",
             "delivered_by_name": "Demo Project Manager",

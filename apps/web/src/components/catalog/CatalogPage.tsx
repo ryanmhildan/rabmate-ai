@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Field";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -14,6 +14,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SkeletonRows, Table, TableMessage, Td, Th } from "@/components/ui/Table";
+import { TAB_LIST, tabClass } from "@/components/ui/Tabs";
 import { api, errorMessage, queryString } from "@/lib/api";
 import { useCan } from "@/lib/auth";
 import { RAB_ITEM_TYPE, options } from "@/lib/labels";
@@ -36,10 +37,7 @@ export function CatalogPage() {
         description="Harga material, jasa, dan peralatan beserta sumber dan status verifikasinya."
         actions={
           canWrite && (
-            <Link
-              href="/katalog-harga/impor"
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-3.5 text-sm font-medium hover:bg-surface-muted"
-            >
+            <Link href="/katalog-harga/impor" className={buttonClass({ variant: "secondary" })}>
               <FileSpreadsheet aria-hidden className="size-4" />
               Impor spreadsheet
             </Link>
@@ -47,7 +45,7 @@ export function CatalogPage() {
         }
       />
       <ExternalSearchBanner />
-      <div role="tablist" aria-label="Bagian katalog" className="flex gap-1 border-b border-border">
+      <div role="tablist" aria-label="Bagian katalog" className={TAB_LIST}>
         {(
           [
             ["items", "Item & harga"],
@@ -60,9 +58,7 @@ export function CatalogPage() {
             role="tab"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === key ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={tabClass(tab === key)}
           >
             {label}
           </button>
@@ -242,7 +238,7 @@ function CatalogItemsPanel() {
                       </div>
                       {!item.is_active && <StatusBadge tone="neutral">Nonaktif</StatusBadge>}
                     </Td>
-                    <Td>{item.category ?? "—"}</Td>
+                    <Td>{item.category ?? "-"}</Td>
                     <Td>
                       <PriceWithStatus observation={item.prices.latest_verified} />
                     </Td>
@@ -250,7 +246,7 @@ function CatalogItemsPanel() {
                       {showLatest ? (
                         <PriceWithStatus observation={latest} />
                       ) : (
-                        <span className="text-xs text-muted">{latest ? "Sama" : "—"}</span>
+                        <span className="text-xs text-muted">{latest ? "Sama" : "-"}</span>
                       )}
                     </Td>
                     <Td className="text-right tabular">{item.prices.observation_count}</Td>

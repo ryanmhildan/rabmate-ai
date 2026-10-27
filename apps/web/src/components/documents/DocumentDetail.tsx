@@ -7,9 +7,10 @@ import { useParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { AuditList } from "@/components/audit/AuditList";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FullPageMessage } from "@/components/ui/FullPageMessage";
+import { KeyFigure } from "@/components/ui/KeyFigure";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ApiError, api, errorMessage } from "@/lib/api";
@@ -18,6 +19,7 @@ import { documentFileUrl, formatBytes } from "@/lib/documents";
 import { formatMoney, formatPercent, formatTanggalWaktu } from "@/lib/format";
 import { DOCUMENT_STATUS, DOCUMENT_TYPE } from "@/lib/labels";
 import type { IssuedDocument, IssuedDocumentDetail, RabSnapshot } from "@/lib/types";
+import { PdfPreviewButton } from "./PdfPreview";
 import { VoidDocumentDialog } from "./VoidDocumentDialog";
 
 export function DocumentDetail() {
@@ -93,9 +95,9 @@ export function DocumentDetail() {
             <Card title="Isi dokumen (snapshot)">
               <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
                 <Info label="Proyek">
-                  {d.snapshot.project.number} — {d.snapshot.project.name}
+                  {d.snapshot.project.number} · {d.snapshot.project.name}
                 </Info>
-                <Info label="Klien">{d.snapshot.client?.name ?? "—"}</Info>
+                <Info label="Klien">{d.snapshot.client?.name ?? "-"}</Info>
                 <Info label="Perusahaan">{d.snapshot.company.legal_name ?? d.snapshot.company.name}</Info>
                 {d.doc_type !== "bast" && <Info label="Nilai">{formatMoney(d.total_amount, d.currency)}</Info>}
                 {source && (
@@ -122,17 +124,20 @@ export function DocumentDetail() {
             <ul className="space-y-3">
               {d.files.map((f) => (
                 <li key={f.format} className="space-y-1 text-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{f.filename}</span>
-                    <a
-                      href={documentFileUrl(d.id, f.format, f.format === "xlsx")}
-                      target={f.format === "pdf" ? "_blank" : undefined}
-                      rel="noopener"
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium hover:bg-surface-muted"
-                    >
-                      <Download aria-hidden className="size-3.5" />
-                      Unduh
-                    </a>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="min-w-0 font-medium break-all">{f.filename}</span>
+                    <div className="flex gap-2">
+                      {f.format === "pdf" && (
+                        <PdfPreviewButton url={documentFileUrl(d.id, "pdf")} title={d.number} label="Lihat" />
+                      )}
+                      <a
+                        href={documentFileUrl(d.id, f.format, true)}
+                        className={buttonClass({ variant: "secondary", size: "sm" })}
+                      >
+                        <Download aria-hidden className="size-3.5" />
+                        Unduh
+                      </a>
+                    </div>
                   </div>
                   <p className="text-xs text-muted">{formatBytes(f.size_bytes)}</p>
                   <p className="font-mono text-[11px] break-all text-muted" title="SHA-256 berkas">
@@ -187,9 +192,9 @@ function RabSnapshotCard({ s }: { s: RabSnapshot }) {
     <Card title="Isi dokumen (snapshot)">
       <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
         <Info label="Proyek">
-          {s.project.number} — {s.project.name}
+          {s.project.number} · {s.project.name}
         </Info>
-        <Info label="Klien">{s.client?.name ?? "—"}</Info>
+        <Info label="Klien">{s.client?.name ?? "-"}</Info>
         <Info label="RAB">
           <Link href={`/rab/${s.rab.id}?v=${s.rab.version_no}`} className="text-primary hover:underline">
             {s.rab.number} versi {s.rab.version_no}
@@ -197,7 +202,7 @@ function RabSnapshotCard({ s }: { s: RabSnapshot }) {
           ({s.rab.status_label} saat terbit)
         </Info>
         <Info label="Disetujui">
-          {s.rab.approved_by ?? "—"}
+          {s.rab.approved_by ?? "-"}
           {s.rab.approved_at && `, ${formatTanggalWaktu(s.rab.approved_at)}`}
         </Info>
         <Info label="Perusahaan">{s.company.legal_name ?? s.company.name}</Info>
@@ -214,7 +219,7 @@ function RabSnapshotCard({ s }: { s: RabSnapshot }) {
             value={formatMoney(s.totals.tax_amount, s.rab.currency)}
           />
         )}
-        <Row label="Total" value={formatMoney(s.totals.grand_total, s.rab.currency)} strong />
+        <KeyFigure label="Total" value={formatMoney(s.totals.grand_total, s.rab.currency)} />
       </dl>
       {s.totals.amount_in_words && <p className="text-xs text-muted italic">Terbilang: {s.totals.amount_in_words}</p>}
     </Card>
@@ -239,9 +244,9 @@ function Info({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className={`flex justify-between gap-4 ${strong ? "font-semibold" : ""}`}>
+    <div className="flex justify-between gap-4">
       <dt>{label}</dt>
       <dd className="tabular">{value}</dd>
     </div>

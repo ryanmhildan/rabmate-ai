@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, FileUp, ScanText } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { Field, FormError, Select } from "@/components/ui/Field";
 import { apiFetch, api, errorMessage } from "@/lib/api";
 import { formatBytes, sourceDocumentFileUrl } from "@/lib/documents";
@@ -75,19 +75,11 @@ export function SourceDocumentPicker({
     <div className="space-y-3">
       <FormError message={error} />
       <div className="flex flex-wrap items-center gap-2">
-        <label
-          htmlFor={inputId}
-          className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium hover:bg-surface-muted ${
-            uploading ? "pointer-events-none opacity-60" : ""
-          }`}
-        >
-          <FileUp aria-hidden className="size-3.5" />
-          {uploading ? "Mengunggah…" : "Unggah berkas"}
-        </label>
+        {/* The input comes first so its keyboard focus can ring the visible label (peer). */}
         <input
           id={inputId}
           type="file"
-          className="sr-only"
+          className="peer sr-only"
           accept={status.accepted_files}
           disabled={uploading}
           onChange={(e) => {
@@ -95,6 +87,19 @@ export function SourceDocumentPicker({
             e.target.value = "";
           }}
         />
+        <label
+          htmlFor={inputId}
+          className={buttonClass({
+            variant: "secondary",
+            size: "sm",
+            className: `cursor-pointer peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary ${
+              uploading ? "pointer-events-none opacity-60" : ""
+            }`,
+          })}
+        >
+          <FileUp aria-hidden className="size-3.5" />
+          {uploading ? "Mengunggah…" : "Unggah berkas"}
+        </label>
         <span className="text-xs text-muted">
           {status.accepted_files} · maks. {status.upload_max_mb} MB
         </span>
@@ -102,7 +107,7 @@ export function SourceDocumentPicker({
       <p className="flex items-start gap-1.5 text-xs text-muted">
         <ScanText aria-hidden className="mt-0.5 size-3.5 shrink-0" />
         {status.ocr.available
-          ? `OCR tersedia (${status.ocr.message}) — halaman hasil scan dan gambar dibaca dengan OCR.`
+          ? `OCR tersedia (${status.ocr.message}). Halaman hasil scan dan gambar dibaca dengan OCR.`
           : status.ocr.message}
       </p>
       <Field label="Dokumen sumber proyek">

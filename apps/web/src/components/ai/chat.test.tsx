@@ -25,7 +25,7 @@ const ready: AiStatus = {
 const rabSource: ChatSource = {
   id: "S2",
   kind: "rab",
-  label: "RAB-2026-0002 v1 (draft) — Jaringan",
+  label: "RAB-2026-0002 v1 (draft) · Jaringan",
   ref: { type: "rab", id: "rab1" },
   data: { grand_total: "Rp 10.946.265" },
 };
@@ -120,7 +120,7 @@ describe("ProjectChat", () => {
     expect(screen.getByText("Apakah ongkos kirim ditanggung klien?")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /RAB-2026-0002 v1/ })).toHaveAttribute("href", "/rab/rab1");
     expect(screen.getByText(/Tidak termasuk dalam data jawaban terakhir/)).toBeInTheDocument();
-    expect(screen.getByText("(terkait — tidak dikutip AI)")).toBeInTheDocument();
+    expect(screen.getByText("(terkait, tidak dikutip AI)")).toBeInTheDocument();
   });
 
   it("shows progress while answering and the error when it fails", async () => {

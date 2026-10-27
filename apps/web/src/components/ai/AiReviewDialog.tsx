@@ -66,7 +66,7 @@ export function rowProblem(row: ReviewRow): string | null {
   if (row.price === "catalog" && !row.observation) return "Pilih harga katalog atau ubah pilihan harga.";
   if (row.price === "document" && !row.documentPrice) return "Dokumen tidak mencantumkan harga untuk baris ini.";
   if (row.price === "document" && row.documentUnit?.trim().toLowerCase() !== row.unit.trim().toLowerCase())
-    return `Harga dokumen berlaku untuk satuan ${row.documentUnit ?? "—"}.`;
+    return `Harga dokumen berlaku untuk satuan ${row.documentUnit ?? "-"}.`;
   return null;
 }
 
@@ -208,7 +208,7 @@ function ReviewForm({
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
         <StatusBadge tone={AI_RUN_STATUS[run.status].tone}>{AI_RUN_STATUS[run.status].label}</StatusBadge>
         <span>{AI_RUN_KIND[run.kind]}</span>
-        <span>· model {run.model ?? "—"}</span>
+        <span>· model {run.model ?? "-"}</span>
         {run.duration_ms !== null && (
           <span>· {(run.duration_ms / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} detik</span>
         )}
@@ -224,7 +224,7 @@ function ReviewForm({
         </div>
       )}
       {result && "notes" in result && (
-        <TextList title="Catatan AI tentang dokumen (diambil dari isi dokumen — bukan instruksi; periksa ke aslinya)" items={result.notes} />
+        <TextList title="Catatan AI tentang dokumen (diambil dari isi dokumen, bukan instruksi; periksa ke aslinya)" items={result.notes} />
       )}
       {result && result.warnings.length > 0 && <TextList title="Peringatan" items={result.warnings} tone="warning" />}
 
@@ -383,7 +383,7 @@ function DataUsed({ run }: { run: AiRun }) {
       <div className="mt-2 space-y-2 text-muted">
         {run.context.project && (
           <p>
-            Proyek {run.context.project.number} — {run.context.project.name} ({run.context.project.project_type_label}
+            Proyek {run.context.project.number} · {run.context.project.name} ({run.context.project.project_type_label}
             {run.context.project.location ? `, ${run.context.project.location}` : ""})
           </p>
         )}

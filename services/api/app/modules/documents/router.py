@@ -3,16 +3,17 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Header, Query, Response, status
+from fastapi import APIRouter, Depends, File, Header, Query, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import RequestContext, require
-from app.core.errors import ErrorResponse
+from app.core.errors import AppError, ErrorResponse, NotFoundError
 from app.core.pagination import Page, PageParams, page_params
 from app.core.ratelimit import EXPENSIVE
 from app.db.session import get_db
-from app.modules.documents import schemas, service
+from app.modules.documents import letterhead, schemas, service
 from app.modules.documents.models import (
+    DocumentLetterhead,
     DocumentSettings,
     DocumentStatus,
     DocumentType,
@@ -90,6 +91,75 @@ def put_settings(
     db: Session = Depends(get_db),
 ) -> schemas.DocumentSettingsOut:
     return _settings_out(service.update_settings(db, ctx, payload))
+
+
+class LetterheadTooLargeError(AppError):
+    status_code = 413
+    code = "payload_too_large"
+
+
+@settings_router.get(
+    "/letterhead",
+    response_model=schemas.LetterheadOut | None,
+    summary="Kop surat organisasi (null bila belum diunggah)",
+)
+def get_letterhead(
+    ctx: RequestContext = Depends(require(Permission.DOCUMENTS_READ)),
+    db: Session = Depends(get_db),
+) -> DocumentLetterhead | None:
+    return service.letterhead_row(db, ctx)
+
+
+@settings_router.get(
+    "/letterhead/image",
+    summary="Gambar kop surat (PNG hasil olahan server)",
+    response_class=Response,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_letterhead_image(
+    ctx: RequestContext = Depends(require(Permission.DOCUMENTS_READ)),
+    db: Session = Depends(get_db),
+) -> Response:
+    row = service.letterhead_row(db, ctx, with_content=True)
+    if row is None:
+        raise NotFoundError("Belum ada kop surat yang diunggah.")
+    # The bytes are the server's own PNG re-encoding (no upload passes through), so showing them
+    # inline in the settings page is safe; nosniff is set globally.
+    return Response(
+        row.content,
+        media_type=row.content_type,
+        headers={"Content-Disposition": 'inline; filename="kop-surat.png"', **NO_STORE},
+    )
+
+
+@settings_router.put(
+    "/letterhead",
+    dependencies=EXPENSIVE,
+    response_model=schemas.LetterheadOut,
+    summary="Unggah atau ganti kop surat (PNG/JPEG, maks. 2 MB)",
+    responses={413: {"model": ErrorResponse}},
+)
+def put_letterhead(
+    file: UploadFile = File(...),
+    ctx: RequestContext = Depends(require(Permission.ORG_UPDATE)),
+    db: Session = Depends(get_db),
+) -> DocumentLetterhead:
+    limit = letterhead.MAX_UPLOAD_BYTES
+    content = file.file.read(limit + 1)  # bounded read; never loads more than the limit
+    if len(content) > limit:
+        raise LetterheadTooLargeError("Ukuran file kop surat melebihi 2 MB.")
+    return service.upload_letterhead(db, ctx, file.filename, content)
+
+
+@settings_router.delete(
+    "/letterhead", status_code=status.HTTP_204_NO_CONTENT, summary="Hapus kop surat"
+)
+def delete_letterhead(
+    ctx: RequestContext = Depends(require(Permission.ORG_UPDATE)),
+    db: Session = Depends(get_db),
+) -> Response:
+    service.delete_letterhead(db, ctx)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- RAB preview/issue

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, ClipboardList, Eye, Stamp, Trash2 } from "lucide-react";
+import { ArrowLeft, Ban, ClipboardList, Stamp, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { z } from "zod";
 import { AuditList } from "@/components/audit/AuditList";
 import { ApprovalTimeline, WorkflowButtons } from "@/components/billing/DocWorkflow";
 import { IssueDocumentDialog } from "@/components/documents/IssueDocumentDialog";
+import { PdfPreviewButton } from "@/components/documents/PdfPreview";
 import { VoidDocumentDialog } from "@/components/documents/VoidDocumentDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -26,9 +27,6 @@ import { formatMoney, formatPercent, formatQuantity, formatTanggal, formatTangga
 import { applyServerErrors, blankToNull, optionalText } from "@/lib/forms";
 import { BAST_KIND, DOC_STATUS, PAYMENT_STATE, options } from "@/lib/labels";
 import type { Bast, BastKind, BastListItem, Page, Spk, SpkProgress } from "@/lib/types";
-
-const LINK =
-  "inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium hover:bg-surface-muted";
 
 export function SpkDetail() {
   const { id } = useParams<{ id: string }>();
@@ -81,10 +79,10 @@ export function SpkDetail() {
         }
         actions={
           <>
-            <a href={`${API_BASE}/spk/${id}/preview.pdf`} target="_blank" rel="noopener" className={LINK}>
-              <Eye aria-hidden className="size-3.5" />
-              Pratinjau PDF
-            </a>
+            <PdfPreviewButton
+              url={`${API_BASE}/spk/${id}/preview.pdf`}
+              title={`Pratinjau ${spk.number ?? "SPK"}`}
+            />
             <WorkflowButtons<Spk> base={`/spk/${id}`} actions={spk.allowed_actions} onDone={saved} />
             {spk.can_issue && (
               <Button size="sm" onClick={() => setIssuing(true)}>
@@ -310,7 +308,7 @@ function SpkForm({ spk, onSaved }: { spk: Spk; onSaved: (s: Spk) => void }) {
         <Field
           label="Ketentuan"
           error={errors.terms?.message}
-          hint="Diisi dari template SPK. Aplikasi tidak menambahkan klausul hukum — tulis hanya ketentuan yang sudah disepakati."
+          hint="Diisi dari template SPK. Aplikasi tidak menambahkan klausul hukum. Tulis hanya ketentuan yang sudah disepakati."
         >
           {(a) => <Textarea rows={3} {...a} {...register("terms")} />}
         </Field>
@@ -357,13 +355,13 @@ function SpkText({ spk }: { spk: Spk }) {
         <div>
           <dt className="text-xs text-muted">Jangka waktu</dt>
           <dd>
-            {spk.start_date ? formatTanggal(spk.start_date) : "—"}
+            {spk.start_date ? formatTanggal(spk.start_date) : "-"}
             {spk.end_date && ` s.d. ${formatTanggal(spk.end_date)}`}
           </dd>
         </div>
         <div>
           <dt className="text-xs text-muted">Lokasi</dt>
-          <dd>{spk.location ?? "—"}</dd>
+          <dd>{spk.location ?? "-"}</dd>
         </div>
       </dl>
       {sections.map(
@@ -456,7 +454,7 @@ function SpkBastList({ spkId }: { spkId: string }) {
           {list.data.items.map((b) => (
             <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <span>
-                <Link href={`/spk-bast/bast/${b.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                <Link href={`/spk-bast/bast/${b.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                   {b.number ?? "Draft"}
                 </Link>{" "}
                 {b.title}
@@ -494,7 +492,7 @@ function TermsSummary({ spk }: { spk: Spk }) {
                 {t.percent && <span className="text-xs text-muted"> ({formatPercent(t.percent)})</span>}
               </td>
               <td className="py-1.5 pr-2 text-right tabular whitespace-nowrap">{formatMoney(t.total_amount, spk.currency)}</td>
-              <td className="py-1.5 pr-2 whitespace-nowrap">{t.due_date ? formatTanggal(t.due_date) : "—"}</td>
+              <td className="py-1.5 pr-2 whitespace-nowrap">{t.due_date ? formatTanggal(t.due_date) : "-"}</td>
               <td className="py-1.5 text-xs">
                 {t.invoice ? (
                   <Link href={`/invoice/${t.invoice.id}`} className="text-primary hover:underline">
@@ -579,7 +577,7 @@ function CreateBastForm({ spk, onClose, onCreated }: { spk: Spk; onClose: () => 
         <span>
           Isi baris dengan sisa volume kontrak
           <span className="block text-xs text-muted">
-            Hanya titik awal — ubah atau hapus baris agar sesuai dengan yang benar-benar diserahkan.
+            Hanya titik awal: ubah atau hapus baris agar sesuai dengan yang benar-benar diserahkan.
           </span>
         </span>
       </label>
@@ -602,7 +600,7 @@ function Party({ role, party, name, title }: { role: string; party: string | nul
       {party && <p className="font-medium">{party}</p>}
       <p>
         {name ?? <span className="text-muted">Nama penanda tangan belum diisi</span>}
-        {title && <span className="text-muted"> — {title}</span>}
+        {title && <span className="text-muted">, {title}</span>}
       </p>
     </div>
   );

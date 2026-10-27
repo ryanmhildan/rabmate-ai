@@ -40,7 +40,7 @@ COLUMNS: tuple[Column, ...] = (
 )
 
 GUIDE = (
-    "Isi data mulai baris 2 sheet 'Item RAB'. Jangan gunakan rumus — isi nilai akhirnya.",
+    "Isi data mulai baris 2 sheet 'Item RAB'. Jangan gunakan rumus, isi nilai akhirnya.",
     "Volume dan harga ditulis tanpa pemisah ribuan (4500 atau 4500,75); '4.500' ditolak (ambigu).",
     "Harga satuan boleh kosong: item tetap masuk, tetapi RAB belum dapat diajukan sampai diisi.",
     "Item ditambahkan ke versi draft yang dipilih; item yang sudah ada tidak diubah.",

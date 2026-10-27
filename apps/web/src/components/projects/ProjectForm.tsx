@@ -200,7 +200,7 @@ export function ProjectForm({ project, submitLabel, onSubmit, onCancel }: Props)
         >
           {(a) => (
             <Select {...a} {...register("client_id")} disabled={clients.isPending}>
-              <option value="">— Tanpa klien —</option>
+              <option value="">Tanpa klien</option>
               {currentClient && !clientOptions.some((c) => c.id === currentClient.id) && (
                 <option value={currentClient.id}>{currentClient.name}</option>
               )}
@@ -216,7 +216,7 @@ export function ProjectForm({ project, submitLabel, onSubmit, onCancel }: Props)
           <Field label="Penanggung jawab" error={errors.owner_id?.message}>
             {(a) => (
               <Select {...a} {...register("owner_id")} disabled={users.isPending}>
-                <option value="">— Belum ditentukan —</option>
+                <option value="">Belum ditentukan</option>
                 {(users.data ?? [])
                   .filter((u) => u.is_active || u.id === project?.owner?.id)
                   .map((u) => (

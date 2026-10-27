@@ -86,7 +86,7 @@ function RabQueue() {
                 </Td>
                 <Td>{entry.project.name}</Td>
                 <Td className="text-xs">
-                  {entry.submitted_by?.full_name ?? "—"}
+                  {entry.submitted_by?.full_name ?? "-"}
                   {entry.submitted_at && (
                     <div className="text-muted">{formatTanggalWaktu(entry.submitted_at)}</div>
                   )}
@@ -214,7 +214,7 @@ function DocumentQueue() {
                 </Td>
                 <Td className="text-xs">{row.type}</Td>
                 <Td>{row.project}</Td>
-                <Td className="tabular text-right">{row.value ?? "—"}</Td>
+                <Td className="tabular text-right">{row.value ?? "-"}</Td>
               </tr>
             ))}
           </tbody>

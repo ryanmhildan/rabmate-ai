@@ -98,7 +98,7 @@ def render_rab_xlsx(snapshot: dict[str, Any], verification_code: str | None = No
         text(
             row,
             1,
-            f"PRATINJAU — belum diterbitkan (status versi: {rab['status_label']}). "
+            f"PRATINJAU: belum diterbitkan (status versi: {rab['status_label']}). "
             "Nilai dapat berubah.",
             font=Font(bold=True, color=DANGER),
         )
@@ -110,9 +110,9 @@ def render_rab_xlsx(snapshot: dict[str, Any], verification_code: str | None = No
     project = snapshot["project"]
     client = snapshot["client"]
     info = [
-        ("Proyek", f"{project['number']} — {project['name']}"),
-        ("Klien", client["name"] if client else "—"),
-        ("Lokasi", project["location"] or "—"),
+        ("Proyek", f"{project['number']} · {project['name']}"),
+        ("Klien", client["name"] if client else "-"),
+        ("Lokasi", project["location"] or "-"),
         ("Judul RAB", rab["title"]),
         ("RAB / versi", f"{rab['number']} versi {rab['version_no']} ({rab['status_label']})"),
         ("Mata uang", rab["currency"]),
@@ -162,7 +162,7 @@ def render_rab_xlsx(snapshot: dict[str, Any], verification_code: str | None = No
                 cell = sheet.cell(row=row, column=col[name], value=_excel_number(item[key]))
                 cell.number_format = _number_format(item[key], places)
                 if item[key] is None:
-                    write_text(cell, "—")
+                    write_text(cell, "-")
             text(row, col["Satuan"], item["unit"])
             if show_sources:
                 text(row, col["Jenis sumber"], item["price_source_label"])
@@ -256,7 +256,7 @@ def render_rab_xlsx(snapshot: dict[str, Any], verification_code: str | None = No
 
     stamp = _naive_utc(document["issued_at"] or document["generated_at"])
     workbook.properties.creator = "RABmate AI"
-    workbook.properties.title = f"{document['number'] or 'PRATINJAU'} — {document['title']}"
+    workbook.properties.title = f"{document['number'] or 'PRATINJAU'} · {document['title']}"
     workbook.properties.created = stamp
     workbook.properties.modified = stamp
     buffer = io.BytesIO()
@@ -268,18 +268,18 @@ def _info_sheet(sheet: Worksheet, snapshot: dict[str, Any], verification_code: s
     document = snapshot["document"]
     rab = snapshot["rab"]
     rows = [
-        ("Nomor dokumen", document["number"] or "PRATINJAU — belum diterbitkan"),
+        ("Nomor dokumen", document["number"] or "PRATINJAU: belum diterbitkan"),
         ("Jenis", document["title"]),
         ("RAB", f"{rab['number']} versi {rab['version_no']}"),
         ("Status versi", rab["status_label"]),
-        ("Disetujui oleh", rab["approved_by"] or "—"),
-        ("Disetujui pada", fmt.tanggal_waktu(rab["approved_at"]) if rab["approved_at"] else "—"),
-        ("Diterbitkan oleh", document["issued_by"] or "—"),
+        ("Disetujui oleh", rab["approved_by"] or "-"),
+        ("Disetujui pada", fmt.tanggal_waktu(rab["approved_at"]) if rab["approved_at"] else "-"),
+        ("Diterbitkan oleh", document["issued_by"] or "-"),
         (
             "Diterbitkan pada",
-            fmt.tanggal_waktu(document["issued_at"]) if document["issued_at"] else "—",
+            fmt.tanggal_waktu(document["issued_at"]) if document["issued_at"] else "-",
         ),
-        ("Kode verifikasi (SHA-256 snapshot)", verification_code or "—"),
+        ("Kode verifikasi (SHA-256 snapshot)", verification_code or "-"),
         ("Versi skema snapshot", str(snapshot["schema_version"])),
         ("Keterangan", "Nilai dihitung oleh server RABmate AI. Berkas ini tidak berisi rumus."),
     ]

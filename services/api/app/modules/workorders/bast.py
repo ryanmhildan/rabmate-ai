@@ -176,7 +176,7 @@ def create(db: Session, ctx: RequestContext, payload: BastCreate) -> Bast:
         status=DocStatus.DRAFT,
         kind=payload.kind,
         spk_id=spk.id,
-        title=(payload.title or f"{label} — {spk.title}")[:300],
+        title=(payload.title or f"{label} · {spk.title}")[:300],
         location=spk.location,
         terms=settings.bast_terms if settings else None,
         created_by_id=ctx.user_id,
@@ -341,6 +341,7 @@ def _snapshot(
         return build_bast_snapshot(
             organization=ctx.organization,
             settings_row=documents.settings_row(db, ctx),
+            letterhead=documents.letterhead_row(db, ctx),
             bast=bast,
             spk=spk,
             contract=progress.contract_items(db, ctx, spk),
@@ -357,7 +358,8 @@ def _snapshot(
 
 def preview_pdf(db: Session, ctx: RequestContext, bast_id: uuid.UUID) -> RenderedFile:
     bast = get(db, ctx, bast_id)
-    content = render_bast_pdf(_snapshot(db, ctx, bast, bast.spk, None))
+    snapshot = _snapshot(db, ctx, bast, bast.spk, None)
+    content = render_bast_pdf(snapshot, None, documents.letterhead_png(db, ctx, snapshot))
     name = safe_filename(f"PRATINJAU_{bast.number or 'BAST'}_{bast.title}")
     return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], content)
 
@@ -410,11 +412,15 @@ def issue(
             total_amount=Decimal("0.00"),  # a handover record carries no amount
             snapshot=snapshot,
             digest=digest,
-            files={FileFormat.PDF: render_bast_pdf(snapshot, digest)},
+            files={
+                FileFormat.PDF: render_bast_pdf(
+                    snapshot, digest, documents.letterhead_png(db, ctx, snapshot)
+                )
+            },
             idempotency_key=idempotency_key,
             issued_at=issued_at,
             sources={"bast_id": bast.id},
-            summary=f"{bast.number} — {bast.title}",
+            summary=f"{bast.number} · {bast.title}",
         )
     except IntegrityError:
         db.rollback()

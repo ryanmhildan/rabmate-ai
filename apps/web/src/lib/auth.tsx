@@ -30,7 +30,7 @@ export function loginUrl(pathname: string): string {
 
 /**
  * Loads the current user for every authenticated page. A 401 (no/expired session) sends the
- * browser to /login; permissions shown in the UI are a convenience — the API enforces them.
+ * browser to /login; permissions shown in the UI are a convenience; the API enforces them.
  */
 export function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();

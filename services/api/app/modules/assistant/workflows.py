@@ -677,7 +677,7 @@ class ChatRaw(Lenient):
 
 
 def _value(value: Any) -> str:
-    return "—" if value in (None, "", []) else str(value)
+    return "-" if value in (None, "", []) else str(value)
 
 
 def _render_rab(data: dict[str, Any]) -> list[str]:
@@ -699,10 +699,8 @@ def _render_rab(data: dict[str, Any]) -> list[str]:
             if item.get("unit_price")
             else "belum ada harga"
         )
-        lines.append(
-            f"{_value(item.get('no'))}. {_value(item.get('name'))} — "
-            f"{_value(item.get('quantity'))} {item.get('unit') or ''} — {price}"
-        )
+        amount = f"{_value(item.get('quantity'))} {item.get('unit') or ''}".rstrip()
+        lines.append(f"{_value(item.get('no'))}. {_value(item.get('name'))}: {amount}, {price}")
     return lines
 
 

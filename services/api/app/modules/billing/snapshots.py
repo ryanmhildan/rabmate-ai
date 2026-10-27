@@ -20,7 +20,7 @@ from app.modules.billing.models import (
     TermBasis,
 )
 from app.modules.billing.workflow import STATUS_LABELS
-from app.modules.documents.models import DocumentSettings, DocumentType
+from app.modules.documents.models import DocumentLetterhead, DocumentSettings, DocumentType
 from app.modules.documents.snapshot import (
     APPROVAL_LABELS,
     PROJECT_TYPE_LABELS,
@@ -100,6 +100,7 @@ def build_quotation_snapshot(
     *,
     organization: Organization,
     settings_row: DocumentSettings | None,
+    letterhead: DocumentLetterhead | None,
     quotation: Quotation,
     rab: RabDocument,
     version: RabVersion,
@@ -121,7 +122,7 @@ def build_quotation_snapshot(
     ):
         raise SnapshotIntegrityError("Jumlah termin tidak sama dengan total penawaran.")
 
-    settings = settings_values(settings_row)
+    settings = settings_values(settings_row, letterhead)
     item_rows, groups = items_and_groups(version)
     project = quotation.project
     approved = quotation.status.value in ("approved", "issued")
@@ -207,6 +208,7 @@ def build_invoice_snapshot(
     *,
     organization: Organization,
     settings_row: DocumentSettings | None,
+    letterhead: DocumentLetterhead | None,
     invoice: Invoice,
     quotation: Quotation | None,
     approvals: list[ApprovalRecord],
@@ -215,7 +217,7 @@ def build_invoice_snapshot(
     generated_at: datetime,
 ) -> dict[str, Any]:
     _check_invoice_totals(invoice)
-    settings = settings_values(settings_row)
+    settings = settings_values(settings_row, letterhead)
     approved = invoice.status.value in ("approved", "issued")
     has_tax = invoice.tax_label is not None and invoice.tax_rate_percent is not None
     term = invoice.payment_term

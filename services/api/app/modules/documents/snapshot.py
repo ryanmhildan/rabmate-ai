@@ -18,7 +18,12 @@ from typing import Any
 
 from app.modules.approvals.models import ApprovalAction, ApprovalRecord
 from app.modules.clients.models import Client
-from app.modules.documents.models import DEFAULT_ACCENT_COLOR, DocumentSettings, DocumentType
+from app.modules.documents.models import (
+    DEFAULT_ACCENT_COLOR,
+    DocumentLetterhead,
+    DocumentSettings,
+    DocumentType,
+)
 from app.modules.documents.terbilang import rupiah_in_words
 from app.modules.identity.models import Organization
 from app.modules.projects.models import Project, ProjectType
@@ -95,8 +100,14 @@ class Issuance:
     issued_by: str
 
 
-def settings_values(row: DocumentSettings | None) -> dict[str, Any]:
-    """Template settings as plain values (defaults when the organization never saved any)."""
+def settings_values(
+    row: DocumentSettings | None, letterhead: DocumentLetterhead | None = None
+) -> dict[str, Any]:
+    """Template settings as plain values (defaults when the organization never saved any).
+
+    The letterhead image is referenced by SHA-256 and size only; renderers receive the bytes
+    separately and refuse bytes that do not match.
+    """
     return {
         "tagline": row.tagline if row else None,
         "accent_color": row.accent_color if row else DEFAULT_ACCENT_COLOR,
@@ -105,6 +116,15 @@ def settings_values(row: DocumentSettings | None) -> dict[str, Any]:
         "show_item_codes": row.show_item_codes if row else True,
         "show_price_sources": row.show_price_sources if row else False,
         "show_amount_in_words": row.show_amount_in_words if row else True,
+        "letterhead": (
+            {
+                "sha256": letterhead.sha256,
+                "width_px": letterhead.width_px,
+                "height_px": letterhead.height_px,
+            }
+            if letterhead
+            else None
+        ),
     }
 
 

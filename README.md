@@ -2,17 +2,17 @@
 
 # RABmate AI
 
-**Susun RAB, kelola harga bersumber, dan terbitkan dokumen proyek — dibantu AI yang berjalan sepenuhnya di komputer Anda.**
+**Susun RAB, kelola harga bersumber, dan terbitkan dokumen proyek, dibantu AI yang berjalan sepenuhnya di komputer Anda.**
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](services/api)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.144-009688?logo=fastapi&logoColor=white)](services/api)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](apps/web)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](docker-compose.yml)
 [![AI lokal](https://img.shields.io/badge/AI-Hermes%20%2B%20Ollama%20(lokal)-8A2BE2)](docs/LOCAL_DEVELOPMENT.md#7-ai-lokal-hermes-agent--model-lokal--fase-8)
-[![Tes](https://img.shields.io/badge/tes-513%20backend%20%C2%B7%20167%20frontend-brightgreen)](#pengujian)
+[![Tes](https://img.shields.io/badge/tes-534%20backend%20%C2%B7%20188%20frontend-brightgreen)](#pengujian)
 [![Status](https://img.shields.io/badge/status-MVP%20selesai-success)](docs/PROJECT_PLAN.md#6-kriteria-mvp-selesai)
 
-[Fitur](#fitur) · [Tangkapan layar](#tangkapan-layar) · [Alur kerja](#alur-kerja) · [Mulai cepat](#mulai-cepat) · [Akun demo](#akun-demo) · [Dokumentasi](#dokumentasi)
+[Fitur](#fitur) · [Tangkapan layar](#tangkapan-layar) · [Alur kerja](#alur-kerja) · [Mulai cepat](#mulai-cepat) · [Akun demo](#akun-demo) · [Pembaruan](#pembaruan-setelah-mvp) · [Dokumentasi](#dokumentasi)
 
 <img src="docs/images/dashboard.jpg" alt="Dashboard RABmate AI" width="800">
 
@@ -23,7 +23,7 @@
 ## Tentang
 
 RABmate AI membantu tim estimasi, proyek, dan keuangan menyusun **Rencana Anggaran Biaya (RAB)**
-dan dokumen turunannya — penawaran, invoice, SPK, BAST — untuk berbagai jenis proyek: konstruksi,
+dan dokumen turunannya (penawaran, invoice, SPK, BAST) untuk berbagai jenis proyek: konstruksi,
 fabrikasi, pengadaan, IT, jasa profesional, dan lainnya.
 
 Tiga prinsip yang dipegang di seluruh aplikasi:
@@ -42,7 +42,7 @@ Tiga prinsip yang dipegang di seluruh aplikasi:
 |---|---|
 | **RAB engine** | Item material/jasa/upah/peralatan, volume & harga desimal, pajak & diskon, validasi (item tanpa harga, harga belum terverifikasi), versi, perbandingan versi, approval, ekspor XLSX, impor dari spreadsheet |
 | **Katalog harga** | Riwayat harga per item dengan pemasok & referensi, verifikasi oleh approver, impor spreadsheet, saran kandidat harga saat mengisi RAB |
-| **Dokumen** | Pratinjau PDF dari data terkini, penerbitan idempoten dengan nomor resmi, snapshot beku + berkas PDF/XLSX tersimpan, kode verifikasi di setiap halaman, template per organisasi |
+| **Dokumen** | Pratinjau PDF langsung di dalam web (tanpa harus mengunduh), penerbitan idempoten dengan nomor resmi, snapshot beku + berkas PDF/XLSX tersimpan, kode verifikasi di setiap halaman, template per organisasi, kop surat gambar unggahan sendiri |
 | **Penawaran & invoice** | Penawaran dari RAB disetujui dengan termin (persen/nominal), respons klien, invoice per termin atau manual, pembayaran parsial dengan alokasi dan sisa tagihan |
 | **SPK & BAST** | SPK dari penawaran yang diterima, BAST sebagian/akhir dengan kontrol volume kumulatif terhadap kontrak |
 | **Asisten AI lokal** | Draft item RAB dari deskripsi, ekstraksi item dari teks atau **berkas PDF/XLSX/CSV** (OCR opsional) dengan rujukan halaman & baris, **chat proyek** yang menjawab dari data proyek/RAB/katalog dengan kutipan sumber dan peringatan otomatis |
@@ -52,16 +52,18 @@ Tiga prinsip yang dipegang di seluruh aplikasi:
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/rab.jpg" alt="Ruang kerja RAB"><br><sub><b>Ruang kerja RAB</b> — versi, item bersumber, ringkasan biaya, dokumen terbit.</sub></td>
-    <td width="50%"><img src="docs/images/chat-proyek.jpg" alt="Chat proyek dengan asisten AI lokal"><br><sub><b>Chat proyek</b> — jawaban model lokal dengan kutipan sumber [S2] dan data yang dipakai.</sub></td>
+    <td width="50%"><img src="docs/images/rab.jpg" alt="Ruang kerja RAB"><br><sub><b>Ruang kerja RAB:</b> versi, item bersumber, ringkasan biaya dengan grand total ditandai stabilo, dokumen terbit.</sub></td>
+    <td width="50%"><img src="docs/images/chat-proyek.jpg" alt="Chat proyek dengan asisten AI lokal"><br><sub><b>Chat proyek:</b> jawaban model lokal dengan kutipan sumber [S2] dan data yang dipakai.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/dokumen-terbit.jpg" alt="Dokumen terbit"><br><sub><b>Dokumen terbit</b> — snapshot beku, berkas tersimpan, hash integritas.</sub></td>
-    <td width="50%"><img src="docs/images/katalog-harga.jpg" alt="Katalog harga"><br><sub><b>Katalog harga</b> — harga terverifikasi dan terbaru dipisahkan, lengkap dengan statusnya.</sub></td>
+    <td width="50%"><img src="docs/images/dokumen-terbit.jpg" alt="Dokumen terbit"><br><sub><b>Dokumen terbit:</b> snapshot beku, berkas tersimpan, hash integritas.</sub></td>
+    <td width="50%"><img src="docs/images/katalog-harga.jpg" alt="Katalog harga"><br><sub><b>Katalog harga:</b> harga terverifikasi dan terbaru dipisahkan, lengkap dengan statusnya.</sub></td>
   </tr>
 </table>
 
-<sub>Semua tangkapan layar memakai data demo (berlabel "(Demo)").</sub>
+<sub>Semua tangkapan layar memakai data demo (berlabel "(Demo)"). Tampilan punya tema terang, gelap, dan
+ikuti sistem (menu pengguna, kanan atas); arah visualnya "Tinta & Stabilo" dijelaskan di
+[DESIGN.md](DESIGN.md).</sub>
 
 ## Alur kerja
 
@@ -99,7 +101,7 @@ di [ARCHITECTURE.md](docs/ARCHITECTURE.md) dan keputusan teknis di [DECISIONS.md
 
 | Lapisan | Teknologi |
 |---|---|
-| Frontend | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, TanStack Query, React Hook Form + Zod, Vitest |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, TanStack Query, React Hook Form + Zod, pdf.js (pratinjau PDF di dalam web), Vitest |
 | Backend | FastAPI, SQLAlchemy 2.1, Alembic, Pydantic 2, psycopg 3, ReportLab (PDF), openpyxl (XLSX), pypdf, pytest |
 | Database | PostgreSQL 17 (Docker) |
 | AI | Hermes Agent (API server OpenAI-compatible) + Ollama, mis. `qwen2.5:3b`; Tesseract OCR opsional |
@@ -132,6 +134,18 @@ cd services\api
 Panduan lengkap, perintah manual, dan troubleshooting:
 [LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
 
+**Port 3000 bentrok?** Bila port 3000 dipakai atau dipantau aplikasi lain, jalankan web di port lain
+dan izinkan origin-nya di `.env`, lalu nyalakan ulang API:
+
+```powershell
+# .env: CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3100
+cd apps\web
+npm run dev -- -p 3100
+```
+
+Server web punya `GET /health` (tanpa login) untuk memastikan ia hidup; kesehatan API ada di
+`GET /api/v1/health`.
+
 ## Akun demo
 
 `seed-demo` membuat organisasi **PT Demo RABmate (Demo)** dengan satu akun per peran, lalu
@@ -151,6 +165,16 @@ Semua akun memakai **satu kata sandi acak** yang dibuat saat seed dan disimpan d
 `var/demo-credentials.txt`. Berkas itu di-`.gitignore` dan tidak ikut ke repository. Data demo
 ditolak di `APP_ENV=production`.
 
+## Pembaruan setelah MVP
+
+| Pembaruan | Isi | Catatan |
+|---|---|---|
+| Tampilan "Tinta & Stabilo" | Palet biru tinta + aksen stabilo pada satu angka kunci per layar, font Plus Jakarta Sans, tema terang/gelap/ikuti sistem, dashboard "Perlu tindakan" | [DESIGN.md](DESIGN.md) |
+| Kop surat per organisasi | Unggah PNG/JPEG di **Pengaturan → Template dokumen**; dicetak selebar halaman di halaman pertama semua PDF, judul dokumen di tengah di bawahnya | [ADR-048](docs/DECISIONS.md) |
+| Pratinjau PDF di dalam web | Pratinjau dan PDF dokumen terbit dibuka di jendela dalam aplikasi (pdf.js), jadi tetap tampil di browser yang tidak punya penampil PDF, termasuk ponsel | [ADR-049](docs/DECISIONS.md) |
+
+Dokumen yang sudah terbit tidak ikut berubah oleh pembaruan ini; PDF-nya disimpan saat terbit.
+
 ## AI lokal (opsional)
 
 Fitur non-AI berjalan penuh tanpa AI. Untuk mengaktifkan asisten, pasang Ollama dan Hermes Agent
@@ -168,8 +192,8 @@ dengan profil khusus RABmate (tanpa toolset terminal/file/web), lalu setel `AI_E
 powershell -ExecutionPolicy Bypass -File scripts\check.ps1
 ```
 
-Menjalankan ruff, mypy strict, pytest (513 tes, termasuk **tes penerimaan MVP 11 langkah**, alur
-demo, migrasi per langkah, isolasi organisasi, dan keamanan), ESLint, TypeScript, Vitest (167 tes),
+Menjalankan ruff, mypy strict, pytest (534 tes, termasuk **tes penerimaan MVP 11 langkah**, alur
+demo, migrasi per langkah, isolasi organisasi, dan keamanan), ESLint, TypeScript, Vitest (188 tes),
 serta `next build`. Tes AI memakai adapter palsu, sehingga **tidak membutuhkan model lokal**.
 
 ## Struktur repository
@@ -185,6 +209,8 @@ services/api/
   alembic/           migrasi database
   tests/             pytest (unit, API, penerimaan, migrasi)
 docs/                rencana, arsitektur, keputusan, API, database, keamanan, deployment
+docs/images/         tangkapan layar untuk README
+DESIGN.md            arah visual (palet, tipografi, aturan aksen, tema)
 scripts/             setup.ps1, dev.ps1, check.ps1
 docker-compose.yml   PostgreSQL 17 (bind 127.0.0.1)
 .env.example         semua konfigurasi (placeholder, tanpa secret)
@@ -209,17 +235,19 @@ Hasil tinjauan keamanan: [SECURITY.md](docs/SECURITY.md).
 |---|---|
 | [PROJECT_PLAN.md](docs/PROJECT_PLAN.md) | Rencana, ringkasan tiap fase, kriteria MVP |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arsitektur, alur data, workflow AI, keamanan ringkas |
-| [DECISIONS.md](docs/DECISIONS.md) | Catatan keputusan teknis (ADR-001 s.d. ADR-047) |
+| [DECISIONS.md](docs/DECISIONS.md) | Catatan keputusan teknis (ADR-001 s.d. ADR-049) |
 | [API.md](docs/API.md) | Endpoint REST `/api/v1` beserta izinnya |
 | [DATABASE.md](docs/DATABASE.md) | Skema, relasi, constraint, migrasi |
 | [LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) | Setup lokal, data demo, AI lokal, OCR, troubleshooting |
 | [SECURITY.md](docs/SECURITY.md) | Kontrol keamanan, hasil pemeriksaan, risiko yang diterima |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Checklist deployment, uji asap, rollback |
+| [DESIGN.md](DESIGN.md) | Arah visual "Tinta & Stabilo": palet, tipografi, aturan aksen, tema |
 
 ## Status
 
-**MVP selesai** — 17 kriteria MVP terpenuhi dan teruji
-([PROJECT_PLAN §6](docs/PROJECT_PLAN.md#6-kriteria-mvp-selesai)). Belum di-deploy ke server publik.
+**MVP selesai:** 17 kriteria MVP terpenuhi dan teruji
+([PROJECT_PLAN §6](docs/PROJECT_PLAN.md#6-kriteria-mvp-selesai)), ditambah pembaruan di atas. Belum
+di-deploy ke server publik.
 
 Batasan yang diketahui: OCR (Tesseract) belum dipasang di lingkungan pengembangan; belum ada MFA
 atau reset kata sandi lewat email; rate limit dan background task AI berada di memori satu proses

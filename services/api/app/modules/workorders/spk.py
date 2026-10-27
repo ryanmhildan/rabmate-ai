@@ -309,6 +309,7 @@ def _snapshot(
         return build_spk_snapshot(
             organization=ctx.organization,
             settings_row=documents.settings_row(db, ctx),
+            letterhead=documents.letterhead_row(db, ctx),
             spk=spk,
             quotation=quotation,
             rab=version.rab,
@@ -323,7 +324,8 @@ def _snapshot(
 
 def preview_pdf(db: Session, ctx: RequestContext, spk_id: uuid.UUID) -> RenderedFile:
     spk = get(db, ctx, spk_id)
-    content = render_spk_pdf(_snapshot(db, ctx, spk, None))
+    snapshot = _snapshot(db, ctx, spk, None)
+    content = render_spk_pdf(snapshot, None, documents.letterhead_png(db, ctx, snapshot))
     name = safe_filename(f"PRATINJAU_{spk.number or 'SPK'}_{spk.title}")
     return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], content)
 
@@ -371,11 +373,15 @@ def issue(
             total_amount=spk.contract_value,
             snapshot=snapshot,
             digest=digest,
-            files={FileFormat.PDF: render_spk_pdf(snapshot, digest)},
+            files={
+                FileFormat.PDF: render_spk_pdf(
+                    snapshot, digest, documents.letterhead_png(db, ctx, snapshot)
+                )
+            },
             idempotency_key=idempotency_key,
             issued_at=issued_at,
             sources={"spk_id": spk.id},
-            summary=f"{spk.number} — {spk.title}",
+            summary=f"{spk.number} · {spk.title}",
         )
     except IntegrityError:
         db.rollback()

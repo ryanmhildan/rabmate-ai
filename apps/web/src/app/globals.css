@@ -1,42 +1,102 @@
 @import "tailwindcss";
 
-/* Design tokens. Components use the Tailwind color names below (bg-surface, text-muted, …). */
+/* Design tokens from DESIGN.md ("Tinta & Stabilo"). Components use the Tailwind color names below
+   (bg-surface, text-muted, …). Every text pairing was checked for WCAG AA. */
 :root {
-  --background: #f6f7f9;
+  color-scheme: light;
+  --background: #f7f5f0;
   --surface: #ffffff;
-  --surface-muted: #f1f3f6;
-  --border: #e2e5ea;
-  --foreground: #161a20;
-  --muted: #5d6673;
-  --primary: #1d4ed8;
+  --surface-muted: #efebe3;
+  --border: #e2ddd3;
+  --border-control: #7d8594;
+  --foreground: #14202e;
+  --muted: #566070;
+  --primary: #1f4e79;
+  --primary-hover: #173d60;
   --primary-foreground: #ffffff;
-  --primary-soft: #e7eefc;
-  --success: #15803d;
-  --success-soft: #e6f4ea;
-  --warning: #b45309;
-  --warning-soft: #fdf3e2;
-  --danger: #b91c1c;
-  --danger-soft: #fbe9e9;
+  --primary-soft: #e4ecf4;
+  --highlight: #f5c02e;
+  --highlight-foreground: #14202e;
+  --success: #166534;
+  --success-soft: #e7f3ea;
+  --warning: #9a3412;
+  --warning-soft: #fbede3;
+  --danger: #b42318;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fbeae8;
+  /* Sidebar: the ink "cover" of the workbook; the active page is a paper tab on it. */
+  --sidebar: #15283b;
+  --sidebar-foreground: #f1f4f7;
+  --sidebar-muted: #b9c6d4;
+  --sidebar-hover: #1e3650;
+  --sidebar-active: #f7f5f0;
+  --sidebar-active-foreground: #1f4e79;
+  --sidebar-border: #22384d;
 }
 
+/* Dark: the user's explicit choice (data-theme), or the system setting when they chose none. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0e1116;
-    --surface: #161a21;
-    --surface-muted: #1d222b;
-    --border: #2a303b;
-    --foreground: #e8eaee;
-    --muted: #9aa3b0;
-    --primary: #6b9cff;
-    --primary-foreground: #0b1020;
-    --primary-soft: #1a2640;
-    --success: #4ade80;
-    --success-soft: #13261a;
-    --warning: #fbbf24;
-    --warning-soft: #2a2110;
-    --danger: #f87171;
-    --danger-soft: #2c1515;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #0f1720;
+    --surface: #17212d;
+    --surface-muted: #1c2937;
+    --border: #2a3846;
+    --border-control: #6e7d90;
+    --foreground: #e8edf2;
+    --muted: #9aa7b5;
+    --primary: #8db8e3;
+    --primary-hover: #a6c8ea;
+    --primary-foreground: #0f1720;
+    --primary-soft: #1c2b3b;
+    --highlight: #f5c02e;
+    --highlight-foreground: #0f1720;
+    --success: #6edc98;
+    --success-soft: #13261c;
+    --warning: #fdba74;
+    --warning-soft: #2b1d12;
+    --danger: #fca5a5;
+    --danger-foreground: #0f1720;
+    --danger-soft: #2e1616;
+    --sidebar: #0b121a;
+    --sidebar-foreground: #e8edf2;
+    --sidebar-muted: #9aa7b5;
+    --sidebar-hover: #141e29;
+    --sidebar-active: #8db8e3;
+    --sidebar-active-foreground: #0f1720;
+    --sidebar-border: #1c2937;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0f1720;
+  --surface: #17212d;
+  --surface-muted: #1c2937;
+  --border: #2a3846;
+  --border-control: #6e7d90;
+  --foreground: #e8edf2;
+  --muted: #9aa7b5;
+  --primary: #8db8e3;
+  --primary-hover: #a6c8ea;
+  --primary-foreground: #0f1720;
+  --primary-soft: #1c2b3b;
+  --highlight: #f5c02e;
+  --highlight-foreground: #0f1720;
+  --success: #6edc98;
+  --success-soft: #13261c;
+  --warning: #fdba74;
+  --warning-soft: #2b1d12;
+  --danger: #fca5a5;
+  --danger-foreground: #0f1720;
+  --danger-soft: #2e1616;
+  --sidebar: #0b121a;
+  --sidebar-foreground: #e8edf2;
+  --sidebar-muted: #9aa7b5;
+  --sidebar-hover: #141e29;
+  --sidebar-active: #8db8e3;
+  --sidebar-active-foreground: #0f1720;
+  --sidebar-border: #1c2937;
 }
 
 @theme inline {
@@ -44,25 +104,67 @@
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);
+  --color-border-control: var(--border-control);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --color-danger-soft: var(--danger-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-foreground: var(--sidebar-active-foreground);
+  --color-sidebar-border: var(--sidebar-border);
   --font-sans:
-    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    "Plus Jakarta Sans Variable", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+    sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  /* Controls 6px, cards and dialogs 10px (DESIGN.md). */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  /* One visible focus ring for every interactive element, in both themes (≥ 3:1). */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--primary);
+  }
+
+  /* A checkbox's label is its tap target, so it gets the 44px touch height on phones. */
+  @media (width < 40rem) {
+    label:has(> input[type="checkbox"]) {
+      min-height: 2.75rem;
+    }
+  }
+
+  /* Selecting text marks it like a highlighter: the same stabilo as the key figures. */
+  ::selection {
+    background: color-mix(in srgb, var(--highlight) 65%, transparent);
+    color: var(--highlight-foreground);
+  }
 }
 
 /* Tabular figures keep money columns aligned. */

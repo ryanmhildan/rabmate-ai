@@ -241,7 +241,7 @@ function ItemForm({ item, currency = "IDR", onClose, onSubmit }: Omit<Props, "op
             <Field label="Jenis sumber harga" error={errors.price_source_type?.message} className="sm:col-span-2">
               {(a) => (
                 <Select {...a} {...register("price_source_type")} disabled={!unitPrice}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   {options(PRICE_SOURCE_TYPE).map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}

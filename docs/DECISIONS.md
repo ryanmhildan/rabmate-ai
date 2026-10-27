@@ -717,3 +717,52 @@ dipakai API sebelum dikirim (`normalizeDecimal`):
 Berlaku untuk volume, harga satuan, harga katalog, baris invoice, volume BAST, anggaran proyek,
 diskon, jumlah pembayaran, dan nilai termin. Server tetap hanya menerima bentuk baku dan memvalidasi
 ulang; tidak ada angka yang dikonversi lewat `Number` sebelum dikirim.
+
+## ADR-048: Kop surat gambar per organisasi
+**Status:** Diterima (setelah MVP)
+
+Setiap organisasi dapat mengunggah kop suratnya sendiri. Pilihan pemilik produk: **gambar kop
+penuh** (menggantikan blok teks nama, alamat, kontak, NPWP, dan tagline) dan **hanya di halaman
+pertama**; halaman lanjutan tetap memakai judul berjalan kecil.
+
+- **Penyimpanan.** Tabel `document_letterheads`, maksimal satu baris per organisasi, terpisah dari
+  `document_settings`. Unggah kop tidak menaikkan `version` template, jadi suntingan template yang
+  belum disimpan di layar lain tidak hilang karena konflik versi.
+- **Gambar tidak dipercaya.** Hanya PNG/JPEG (dari magic bytes), maks. 2 MB (baca terbatas → 413),
+  piksel dicek sebelum didekode (maks. 25 MP), lebar minimal 600 px, harus melebar (lebar > tinggi).
+  Server menggambar ulang menjadi PNG baru: orientasi EXIF diterapkan, metadata dibuang, kanal alfa
+  yang seluruhnya buram dibuang, lebar di atas 2400 px diperkecil. Yang disimpan dan ditampilkan
+  hanya hasil olahan itu, sehingga gambar boleh tampil inline di halaman pengaturan.
+- **Snapshot dan dokumen terbit.** `settings.letterhead` di snapshot berisi SHA-256 dan ukuran
+  piksel, bukan byte gambar (snapshot tetap kecil). Renderer menerima byte terpisah dan menolak byte
+  yang hash-nya tidak cocok; snapshot tanpa kunci ini (semua dokumen sebelum fitur) tetap memakai
+  kop teks. PDF terbit disimpan saat terbit, jadi mengganti atau menghapus kop tidak mengubah
+  dokumen yang sudah terbit.
+- **Tata letak.** Gambar diskalakan ke lebar konten, atau ke tinggi maksimal 50 mm bila kopnya
+  tinggi. Di bawahnya susunan surat resmi: judul di tengah (tebal, bergaris bawah), nomor, lalu
+  satu baris keterangan (tanggal, versi, jatuh tempo). Tanpa garis aksen dan tanpa susunan rata
+  kanan kop teks: kop unggahan biasanya sudah punya garis sendiri, dan susunan kop teks di bawahnya
+  terbaca sebagai dua kop bertumpuk (temuan uji pengguna).
+- **Di luar cakupan.** Ekspor XLSX tetap memakai kop teks; kop PDF/Word (bukan gambar) tidak
+  diterima, simpan sebagai PNG terlebih dahulu.
+
+## ADR-049: Pratinjau PDF di dalam web dengan pdf.js
+**Status:** Diterima (setelah MVP)
+
+Tombol pratinjau dulu membuka PDF (`inline`) di tab baru. Browser tanpa penampil PDF (Chrome
+Android, browser di dalam aplikasi lain, panel browser Claude) atau Chrome dengan pengaturan
+"unduh PDF" malah mengunduh berkasnya, jadi pengguna merasa "setiap pratinjau harus diunduh".
+
+- **Keputusan.** Pratinjau dan PDF dokumen terbit dibuka di jendela (dialog) di dalam web; halaman
+  digambar sendiri dengan **pdf.js** (`pdfjs-dist`, Mozilla, Apache-2.0; dipilih pemilik produk).
+  Ada perbesar/perkecil (75 sampai 200 persen, dasarnya pas lebar), jumlah halaman, "Unduh PDF"
+  (`?download=true`), dan "Tab baru" untuk mencetak lewat penampil bawaan browser bila ada.
+- **Pemuatan.** pdf.js dimuat hanya saat jendela dibuka (impor dinamis), di browser saja. Halaman
+  digambar saat mendekati layar, pada resolusi layar (devicePixelRatio).
+- **Worker di thread utama.** Modul worker pdf.js diimpor biasa dan diberikan sebagai `pdfjsWorker`.
+  Worker terpisah lewat `new URL(..., import.meta.url)` sempat dicurigai membuat Fast Refresh
+  memuat ulang halaman terus-menerus; dokumen kami hanya beberapa halaman, jadi thread utama cukup.
+- **Keamanan.** Yang dibuka hanya PDF buatan server sendiri dari origin yang sama; header tidak
+  berubah (PDF tetap `inline`, `X-Frame-Options: DENY`, tidak ditanam lewat iframe).
+- **Web `/health`.** Server web kini punya `GET /health` → `ok` tanpa login, untuk pemeriksa
+  kesiapan lokal dan load balancer. Sebelumnya permintaan itu dialihkan ke `/login`.

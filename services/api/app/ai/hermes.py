@@ -226,4 +226,4 @@ def _error_message(response: httpx2.Response) -> str | None:
 
 
 def toolset_names(values: Iterable[str]) -> str:
-    return ", ".join(sorted(values)) or "—"
+    return ", ".join(sorted(values)) or "-"

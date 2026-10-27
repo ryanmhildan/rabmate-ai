@@ -7,6 +7,7 @@ XML-escaped before it reaches a Paragraph, because ReportLab paragraph markup ca
 
 from __future__ import annotations
 
+import hashlib
 import io
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -16,15 +17,17 @@ from xml.sax.saxutils import escape
 import reportlab
 from reportlab import rl_config
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import (
     Flowable,
     HRFlowable,
+    Image,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -48,6 +51,8 @@ _FONT_FILES = {
 }
 
 MARGIN = 15 * mm
+# A tall kop is scaled down to this height so the document body still starts on page 1.
+MAX_LETTERHEAD_HEIGHT = 50 * mm
 GREY = colors.HexColor("#5F6B7A")
 LINE = colors.HexColor("#C9D1DB")
 DANGER = colors.HexColor("#B42318")
@@ -109,6 +114,17 @@ class Styles:
             alignment=TA_RIGHT,
         )
         self.right = ParagraphStyle("right", parent=base, alignment=TA_RIGHT)
+        # Title block under an uploaded kop: centred, black, like the heading of a formal letter.
+        self.title_center = ParagraphStyle(
+            "title_center",
+            parent=base,
+            fontName=FONT_BOLD,
+            fontSize=13,
+            leading=17,
+            alignment=TA_CENTER,
+        )
+        self.center = ParagraphStyle("center", parent=base, alignment=TA_CENTER, leading=12)
+        self.center_small = ParagraphStyle("center_small", parent=self.small, alignment=TA_CENTER)
         self.heading = ParagraphStyle(
             "heading", parent=base, fontName=FONT_BOLD, fontSize=9, leading=12, spaceBefore=6
         )
@@ -187,8 +203,37 @@ def page_furniture(
 
 def footer_left(number: str | None, verification_code: str | None, preview: bool) -> str:
     if preview:
-        return "PRATINJAU — bukan dokumen resmi"
-    return f"{number}  ·  Kode verifikasi: {(verification_code or '—')[:16]}"
+        return "PRATINJAU: bukan dokumen resmi"
+    return f"{number}  ·  Kode verifikasi: {(verification_code or '-')[:16]}"
+
+
+class LetterheadMismatchError(RuntimeError):
+    """The snapshot names a letterhead image but the bytes given are missing or different."""
+
+
+def letterhead_image(settings: dict[str, Any], image: bytes | None) -> bytes | None:
+    """The image bytes to print, checked against the SHA-256 the snapshot recorded.
+
+    A snapshot without a letterhead (including every snapshot made before letterheads existed)
+    prints the text block, whatever bytes are passed.
+    """
+    expected = settings.get("letterhead")
+    if not expected:
+        return None
+    if image is None or hashlib.sha256(image).hexdigest() != expected["sha256"]:
+        raise LetterheadMismatchError("Gambar kop surat tidak cocok dengan snapshot dokumen.")
+    return image
+
+
+def _letterhead_picture(image: bytes, width: float) -> Image:
+    """The kop scaled to the content width, or to MAX_LETTERHEAD_HEIGHT if it is tall."""
+    pixel_width, pixel_height = ImageReader(io.BytesIO(image)).getSize()
+    scale = min(width / pixel_width, MAX_LETTERHEAD_HEIGHT / pixel_height)
+    picture = Image(
+        io.BytesIO(image), width=pixel_width * scale, height=pixel_height * scale, mask="auto"
+    )
+    picture.hAlign = "CENTER"
+    return picture
 
 
 def letterhead(
@@ -198,11 +243,19 @@ def letterhead(
     styles: Styles,
     width: float,
     accent: colors.Color,
+    image: bytes | None = None,
 ) -> list[Flowable]:
     """Company block (from the organization profile) left; document title + `right` lines.
 
-    `right[0]` is the document title (already safe markup); the rest are safe markup lines.
+    `right[0]` is the document title (already safe markup), `right[1]` the number (or the preview
+    mark), the rest safe markup lines such as dates. Only the first page carries the header.
     """
+    if image is not None:
+        return _image_letterhead(image, right, styles, width)
+
+    right_flow: list[Flowable] = [Paragraph(right[0], styles.doc_title)]
+    right_flow += [Paragraph(line, styles.right) for line in right[1:]]
+    rule = HRFlowable(width="100%", thickness=2, color=accent, spaceAfter=4 * mm)
     left: list[Flowable] = [
         Paragraph(esc(company["legal_name"] or company["name"]), styles.company)
     ]
@@ -217,8 +270,6 @@ def letterhead(
     if company["tax_id"]:
         left.append(Paragraph(f"NPWP {esc(company['tax_id'])}", styles.small))
 
-    right_flow: list[Flowable] = [Paragraph(right[0], styles.doc_title)]
-    right_flow += [Paragraph(line, styles.right) for line in right[1:]]
     head = Table(
         [[left, right_flow]],
         colWidths=[width * 0.58, width * 0.42],
@@ -230,11 +281,28 @@ def letterhead(
             ]
         ),
     )
-    return [
-        head,
-        Spacer(1, 2 * mm),
-        HRFlowable(width="100%", thickness=2, color=accent, spaceAfter=4 * mm),
+    return [head, Spacer(1, 2 * mm), rule]
+
+
+def _image_letterhead(
+    image: bytes, lines: Sequence[str], styles: Styles, width: float
+) -> list[Flowable]:
+    """Uploaded kop on top, then the title block centred under it, as on a formal letter.
+
+    The kop replaces the company block and brings its own rule, so no accent rule is added: a
+    second header shape under the image reads as two letterheads stacked.
+    """
+    out: list[Flowable] = [
+        _letterhead_picture(image, width),
+        Spacer(1, 5 * mm),
+        Paragraph(f"<u>{lines[0]}</u>", styles.title_center),
     ]
+    if len(lines) > 1:
+        out.append(Paragraph(lines[1], styles.center))
+    if len(lines) > 2:
+        out.append(Paragraph("  ·  ".join(lines[2:]), styles.center_small))
+    out.append(Spacer(1, 5 * mm))
+    return out
 
 
 def preview_banner(markup: str, styles: Styles, width: float) -> list[Flowable]:
@@ -334,7 +402,7 @@ def signature_block(
         return [
             Paragraph(esc(label), styles.small),
             Spacer(1, 16 * mm),
-            Paragraph(f"<b>{esc(name or '—')}</b>", styles.body),
+            Paragraph(f"<b>{esc(name or '-')}</b>", styles.body),
             Paragraph(esc(fmt.tanggal(when) if when else ""), styles.small),
         ]
 
@@ -365,9 +433,9 @@ def party_signature_block(
     def cell(role: str, party: str | None, name: str | None, position: str | None) -> list[Any]:
         return [
             Paragraph(esc(role), styles.small),
-            Paragraph(f"<b>{esc(party or '—')}</b>", styles.body),
+            Paragraph(f"<b>{esc(party or '-')}</b>", styles.body),
             Spacer(1, 20 * mm),
-            Paragraph(f"<u><b>{esc(name or '—')}</b></u>", styles.body),
+            Paragraph(f"<u><b>{esc(name or '-')}</b></u>", styles.body),
             Paragraph(esc(position or ""), styles.small),
         ]
 

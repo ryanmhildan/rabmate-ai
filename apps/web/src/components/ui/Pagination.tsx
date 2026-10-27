@@ -23,6 +23,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
           variant="secondary"
           size="sm"
           aria-label="Halaman sebelumnya"
+          className="min-w-11 sm:min-w-8"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
@@ -35,6 +36,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
           variant="secondary"
           size="sm"
           aria-label="Halaman berikutnya"
+          className="min-w-11 sm:min-w-8"
           disabled={page >= pages}
           onClick={() => onPageChange(page + 1)}
         >

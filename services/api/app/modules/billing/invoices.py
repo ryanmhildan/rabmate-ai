@@ -224,7 +224,7 @@ def create_for_term(
         client_id=project.client_id,
         quotation_id=quotation.id,
         payment_term_id=term.id,
-        title=f"{term.name} — {quotation.subject}"[:300],
+        title=f"{term.name} · {quotation.subject}"[:300],
         due_date=term.due_date,
         currency=quotation.currency,
         tax_label=quotation.tax_label,
@@ -238,7 +238,7 @@ def create_for_term(
         InvoiceItem(
             organization_id=ctx.organization_id,
             position=1,
-            description=f"{term.name} ({portion}) — {quotation.number}"[:500],
+            description=f"{term.name} ({portion}) · {quotation.number}"[:500],
             quantity=Decimal(1),
             unit="ls",
             unit_price=term.amount,
@@ -392,6 +392,7 @@ def _snapshot(
         return build_invoice_snapshot(
             organization=ctx.organization,
             settings_row=documents.settings_row(db, ctx),
+            letterhead=documents.letterhead_row(db, ctx),
             invoice=invoice,
             quotation=quotation_of(db, invoice),
             approvals=common.approvals_of(db, ctx, ENTITY, invoice.id),
@@ -405,7 +406,8 @@ def _snapshot(
 
 def preview_pdf(db: Session, ctx: RequestContext, invoice_id: uuid.UUID) -> RenderedFile:
     invoice = get(db, ctx, invoice_id)
-    content = render_invoice_pdf(_snapshot(db, ctx, invoice, None, invoice.issue_date))
+    snapshot = _snapshot(db, ctx, invoice, None, invoice.issue_date)
+    content = render_invoice_pdf(snapshot, None, documents.letterhead_png(db, ctx, snapshot))
     name = safe_filename(f"PRATINJAU_{invoice.number or 'invoice'}_{invoice.title}"[:80])
     return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], content)
 
@@ -461,11 +463,15 @@ def issue(
             total_amount=invoice.grand_total,
             snapshot=snapshot,
             digest=digest,
-            files={FileFormat.PDF: render_invoice_pdf(snapshot, digest)},
+            files={
+                FileFormat.PDF: render_invoice_pdf(
+                    snapshot, digest, documents.letterhead_png(db, ctx, snapshot)
+                )
+            },
             idempotency_key=idempotency_key,
             issued_at=issued_at,
             sources={"invoice_id": invoice.id},
-            summary=f"{invoice.number} — {invoice.title}",
+            summary=f"{invoice.number} · {invoice.title}",
         )
     except IntegrityError:
         db.rollback()

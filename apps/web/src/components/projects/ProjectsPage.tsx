@@ -4,7 +4,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { FolderKanban, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Field";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -41,10 +41,7 @@ export function ProjectsPage() {
   const filtered = q !== "" || status !== "" || type !== "";
   const items = list.data?.items ?? [];
   const newButton = canWrite && (
-    <Link
-      href="/proyek/baru"
-      className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
-    >
+    <Link href="/proyek/baru" className={buttonClass()}>
       <Plus aria-hidden className="size-4" />
       Proyek baru
     </Link>
@@ -144,10 +141,10 @@ export function ProjectsPage() {
                     </Link>
                     <div className="text-xs text-muted">{p.number}</div>
                   </Td>
-                  <Td>{p.client?.name ?? "—"}</Td>
+                  <Td>{p.client?.name ?? "-"}</Td>
                   <Td>{PROJECT_TYPE[p.project_type]}</Td>
                   <Td className="text-xs">
-                    {p.start_date ? formatTanggal(p.start_date) : "—"}
+                    {p.start_date ? formatTanggal(p.start_date) : "-"}
                     {p.end_date && <div className="text-muted">s.d. {formatTanggal(p.end_date)}</div>}
                   </Td>
                   <Td className="tabular text-right">

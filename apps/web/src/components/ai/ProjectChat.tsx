@@ -133,7 +133,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Select
             aria-label="Pilih percakapan"
-            className="h-8 w-56 text-xs"
+            className="sm:w-56"
             value={selected ?? ""}
             onChange={(e) => {
               setSelected(e.target.value || null);
@@ -294,7 +294,7 @@ function SourceView({ source }: { source: ChatSource }) {
         ) : (
           source.label
         )}
-        {source.cited === false && <span className="ml-1 text-warning">(terkait — tidak dikutip AI)</span>}
+        {source.cited === false && <span className="ml-1 text-warning">(terkait, tidak dikutip AI)</span>}
       </summary>
       <pre className="mt-1 max-h-48 overflow-auto rounded bg-surface-muted p-2 font-mono text-[11px] whitespace-pre-wrap">
         {JSON.stringify(source.data, null, 1)}

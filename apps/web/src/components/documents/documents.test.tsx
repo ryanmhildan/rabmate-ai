@@ -143,10 +143,8 @@ describe("RabDocumentsCard", () => {
       <RabDocumentsCard rabId="r1" rabNumber="RAB-1" version={version()} />,
     );
     expect(await screen.findByRole("button", { name: /terbitkan dokumen/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /pratinjau pdf/i })).toHaveAttribute(
-      "href",
-      "/api/v1/rab/r1/versions/1/preview.pdf",
-    );
+    // The preview opens in an in-app viewer (PdfPreview.test.tsx), not as a link the browser may download.
+    expect(screen.getByRole("button", { name: /pratinjau pdf/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ekspor xlsx/i })).toHaveAttribute("href", "/api/v1/rab/r1/versions/1/export.xlsx");
     expect(screen.queryByRole("link", { name: /impor item/i })).toBeNull(); // approved = not editable
     unmount();
@@ -161,7 +159,11 @@ describe("RabDocumentsCard", () => {
     renderAs(["documents.read", "documents.issue"], <RabDocumentsCard rabId="r1" rabNumber="RAB-1" version={version()} />);
     const link = await screen.findByRole("link", { name: "RAB-2026-0001/V1" });
     expect(link).toHaveAttribute("href", "/dokumen/d1");
-    expect(screen.getByRole("link", { name: /^pdf$/i })).toHaveAttribute("href", "/api/v1/documents/d1/files/pdf");
+    expect(screen.getByRole("button", { name: /lihat pdf/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^xlsx$/i })).toHaveAttribute(
+      "href",
+      "/api/v1/documents/d1/files/xlsx?download=true",
+    );
     expect(screen.queryByRole("button", { name: /terbitkan dokumen/i })).toBeNull();
   });
 

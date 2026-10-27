@@ -125,6 +125,10 @@ sumber dari katalog (ADR-029). Respons item membawa `price_observation_id` dan
 | `POST /documents/{id}/void` | `documents.issue` | `{reason}` wajib; 409 bila sudah dibatalkan |
 | `GET /document-settings` | `documents.read` | Template dokumen (`version` 0 = default) |
 | `PUT /document-settings` | `org.update` | Ganti seluruh template; `version` wajib |
+| `GET /document-settings/letterhead` | `documents.read` | Kop surat gambar (metadata) atau `null` |
+| `GET /document-settings/letterhead/image` | `documents.read` | PNG kop hasil olahan server (`no-store`); 404 bila belum ada |
+| `PUT /document-settings/letterhead` | `org.update` | Unggah/ganti kop (multipart `file`, PNG/JPEG, maks. 2 MB → 413; gambar tidak layak → 422). Tidak mengubah `version` template (ADR-048) |
+| `DELETE /document-settings/letterhead` | `org.update` | Hapus kop; PDF berikutnya kembali memakai kop teks (204; 404 bila belum ada) |
 | `GET /rab/item-imports/template?format=xlsx\|csv` | `rab.read` | Template impor item RAB |
 | `POST /rab/{id}/versions/{n}/imports` | `rab.write` | Multipart `file` → pratinjau per baris (versi draft saja) |
 | `GET /rab/{id}/versions/{n}/imports/{job}` | `rab.read` | |

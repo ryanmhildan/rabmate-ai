@@ -57,7 +57,8 @@ Internet ─HTTPS─> reverse proxy (TLS, HSTS, batas ukuran body, rate limit)
 
 ## 4. Uji asap setelah deploy
 
-1. `GET /api/v1/health` → `status: ok`, `database: ok` (dan `ai: ok` bila AI aktif).
+1. `GET /api/v1/health` → `status: ok`, `database: ok` (dan `ai: ok` bila AI aktif). Server web
+   sendiri: `GET /health` → `ok` (tanpa login; tidak memeriksa API).
 2. Login admin; buat klien dan proyek; buat RAB dengan dua item.
 3. Pratinjau PDF terbuka; ajukan → setujui (akun approver) → terbitkan dokumen; unduh PDF/XLSX.
 4. Header respons: `Strict-Transport-Security`, `Content-Security-Policy` pada halaman dan JSON,

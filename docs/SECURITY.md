@@ -15,6 +15,7 @@ terbuka. Tinjauan ini dilakukan pada mesin pengembangan; belum ada audit pihak k
 | Data uang | Decimal end-to-end, totals dihitung server; snapshot + SHA-256 untuk dokumen terbit | `test_rab_calculation.py`, `test_documents_api.py`, `test_acceptance.py` |
 | Idempotensi | Kunci idempotensi untuk penerbitan dan pembayaran | `test_documents_api.py`, `test_billing_api.py` |
 | Upload | Batas ukuran (baca terbatas), jenis dari isi file + ekstensi cocok, zip bomb, nama hanya tampilan, isi di DB, unduhan `attachment` + `nosniff` | `test_intake.py`, `test_ai_documents_api.py` |
+| Kop surat | PNG/JPEG dari isi byte, maks. 2 MB, piksel dicek sebelum didekode (maks. 25 MP), lalu digambar ulang server sebagai PNG baru tanpa metadata (EXIF, teks, profil); hanya hasil olahan yang disimpan dan ditampilkan; PDF menolak gambar yang SHA-256-nya tidak cocok dengan snapshot | `test_letterhead.py` |
 | Isi dokumen | Rumus XLSX tidak dihitung; instruksi di dokumen = data; angka hasil AI dicek ke teks sumber | `test_intake.py`, `test_ai_rules.py`, uji model nyata |
 | Ekspor | Teks pengguna selalu ditulis sebagai string, tidak pernah sebagai formula (CSV/XLSX injection); impor tidak menghitung rumus | `test_documents_render.py`, `test_pricing_import.py`, `test_rab_import.py` |
 | AI | Hanya Hermes di loopback, toolset diverifikasi (fail closed), tool read-only ber-allowlist dengan izin pengguna, tanpa SQL/shell/file, tanpa fallback cloud, log tanpa isi | `test_ai_adapter.py`, `test_ai_api.py`, `test_ai_documents_api.py` |
@@ -51,6 +52,9 @@ terbuka. Tinjauan ini dilakukan pada mesin pengembangan; belum ada audit pihak k
 - CSP halaman tidak membatasi `script-src`: Next.js memakai skrip inline untuk hidrasi; kebijakan
   berbasis nonce memaksa semua halaman dirender dinamis. Mitigasi: tidak ada
   `dangerouslySetInnerHTML`/`eval` di kode aplikasi, data selalu dirender sebagai teks oleh React.
+  Satu-satunya skrip inline milik aplikasi adalah skrip tema (`THEME_BOOT_SCRIPT` di
+  `apps/web/src/lib/theme.ts`): teks konstan yang hanya membaca pilihan tema dari `localStorage` dan
+  menyetel `data-theme` sebelum render pertama, tanpa data pengguna atau server.
 - Rate limit endpoint berat dan kunci model AI ada di memori proses (lihat DEPLOYMENT §6).
 - Background task AI hilang bila proses API restart (ditandai `ai_interrupted`).
 - Tidak ada MFA, verifikasi email, atau reset kata sandi lewat email.

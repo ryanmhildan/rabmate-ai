@@ -353,6 +353,7 @@ def _snapshot(
         return build_quotation_snapshot(
             organization=ctx.organization,
             settings_row=documents.settings_row(db, ctx),
+            letterhead=documents.letterhead_row(db, ctx),
             quotation=quotation,
             rab=rab,
             version=version,
@@ -366,7 +367,8 @@ def _snapshot(
 
 def preview_pdf(db: Session, ctx: RequestContext, quotation_id: uuid.UUID) -> RenderedFile:
     quotation = get(db, ctx, quotation_id)
-    content = render_quotation_pdf(_snapshot(db, ctx, quotation, None))
+    snapshot = _snapshot(db, ctx, quotation, None)
+    content = render_quotation_pdf(snapshot, None, documents.letterhead_png(db, ctx, snapshot))
     name = safe_filename(f"PRATINJAU_{quotation.number}")
     return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], content)
 
@@ -411,11 +413,15 @@ def issue(
             total_amount=quotation.grand_total,
             snapshot=snapshot,
             digest=digest,
-            files={FileFormat.PDF: render_quotation_pdf(snapshot, digest)},
+            files={
+                FileFormat.PDF: render_quotation_pdf(
+                    snapshot, digest, documents.letterhead_png(db, ctx, snapshot)
+                )
+            },
             idempotency_key=idempotency_key,
             issued_at=issued_at,
             sources={"quotation_id": quotation.id},
-            summary=f"{quotation.number} — {quotation.subject}",
+            summary=f"{quotation.number} · {quotation.subject}",
         )
     except IntegrityError:
         db.rollback()

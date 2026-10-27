@@ -169,11 +169,11 @@ export function ProjectDetail() {
           {canAskAi && <ProjectChat projectId={p.id} />}
           <Card title="Ringkasan">
             <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-              <Item label="Klien">{p.client?.name ?? "—"}</Item>
-              <Item label="Penanggung jawab">{p.owner?.full_name ?? "—"}</Item>
-              <Item label="Lokasi">{p.location ?? "—"}</Item>
+              <Item label="Klien">{p.client?.name ?? "-"}</Item>
+              <Item label="Penanggung jawab">{p.owner?.full_name ?? "-"}</Item>
+              <Item label="Lokasi">{p.location ?? "-"}</Item>
               <Item label="Jadwal">
-                {p.start_date ? formatTanggal(p.start_date) : "—"}
+                {p.start_date ? formatTanggal(p.start_date) : "-"}
                 {p.end_date ? ` s.d. ${formatTanggal(p.end_date)}` : ""}
               </Item>
               <Item label="Anggaran">
@@ -194,7 +194,7 @@ export function ProjectDetail() {
               <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
                 {Object.entries(p.attributes).map(([key, value]) => (
                   <Item key={key} label={key}>
-                    {value === null ? "—" : String(value)}
+                    {value === null ? "-" : String(value)}
                   </Item>
                 ))}
               </dl>
@@ -257,7 +257,7 @@ function Prose({ label, text }: { label: string; text: string | null }) {
     <div className="text-sm">
       <p className="text-xs text-muted">{label}</p>
       {/* Rendered as text (React escapes it); whitespace preserved for multi-line input. */}
-      <p className="mt-0.5 whitespace-pre-wrap">{text ?? "—"}</p>
+      <p className="mt-0.5 whitespace-pre-wrap">{text ?? "-"}</p>
     </div>
   );
 }

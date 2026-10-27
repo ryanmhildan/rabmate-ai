@@ -21,7 +21,7 @@ export function TransitionDialog({ action, versionNo, onClose, onConfirm }: Prop
     <Dialog
       open={action !== null}
       onClose={onClose}
-      title={action ? `${RAB_ACTION[action].label} — versi ${versionNo}` : ""}
+      title={action ? `${RAB_ACTION[action].label} (versi ${versionNo})` : ""}
     >
       {action && <TransitionForm key={action} action={action} onClose={onClose} onConfirm={onConfirm} />}
     </Dialog>

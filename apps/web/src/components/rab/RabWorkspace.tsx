@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { FullPageMessage } from "@/components/ui/FullPageMessage";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -149,10 +149,7 @@ export function RabWorkspace() {
         actions={
           <>
             {doc.versions.length > 1 && (
-              <Link
-                href={compareHref(id, selected ?? 1)}
-                className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-3.5 text-sm font-medium hover:bg-surface-muted"
-              >
+              <Link href={compareHref(id, selected ?? 1)} className={buttonClass({ variant: "secondary" })}>
                 <GitCompare aria-hidden className="size-4" />
                 Bandingkan
               </Link>

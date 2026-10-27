@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { FormError } from "@/components/ui/Field";
@@ -315,14 +315,14 @@ function PreviewRow({ row }: { row: ImportRow }) {
         )}
       </Td>
       <Td>
-        <div className="font-medium">{d.name ?? "—"}</div>
+        <div className="font-medium">{d.name ?? "-"}</div>
         <div className="text-xs text-muted">{[d.code, d.category, type].filter(Boolean).join(" · ")}</div>
       </Td>
       <Td className="text-right tabular whitespace-nowrap">
-        {d.quantity ? `${formatQuantity(d.quantity)} ${d.unit ?? ""}` : "—"}
+        {d.quantity ? `${formatQuantity(d.quantity)} ${d.unit ?? ""}` : "-"}
       </Td>
-      <Td className="text-right tabular whitespace-nowrap">{d.unit_price ? formatUnitPrice(d.unit_price) : "—"}</Td>
-      <Td className="text-right tabular whitespace-nowrap">{d.subtotal ? formatMoney(d.subtotal, "IDR") : "—"}</Td>
+      <Td className="text-right tabular whitespace-nowrap">{d.unit_price ? formatUnitPrice(d.unit_price) : "-"}</Td>
+      <Td className="text-right tabular whitespace-nowrap">{d.subtotal ? formatMoney(d.subtotal, "IDR") : "-"}</Td>
       <Td className="max-w-64 text-xs text-danger">
         {row.errors.length > 0 && (
           <ul className="space-y-0.5">
@@ -341,7 +341,7 @@ function TemplateLink({ format, label }: { format: "xlsx" | "csv"; label: string
     <a
       href={`${API_BASE}/rab/item-imports/template?format=${format}`}
       download
-      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-3.5 text-sm font-medium hover:bg-surface-muted"
+      className={buttonClass({ variant: "secondary" })}
     >
       <Download aria-hidden className="size-4" />
       {label}

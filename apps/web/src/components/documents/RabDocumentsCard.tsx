@@ -1,12 +1,12 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Eye, FileSignature, FileSpreadsheet, FileUp, Stamp } from "lucide-react";
+import { Download, FileSignature, FileSpreadsheet, FileUp, Stamp } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { api, errorMessage, queryString } from "@/lib/api";
@@ -16,9 +16,9 @@ import { formatMoney, formatTanggalWaktu } from "@/lib/format";
 import { DOCUMENT_STATUS } from "@/lib/labels";
 import type { IssuedDocument, Page, RabVersion } from "@/lib/types";
 import { IssueDocumentDialog } from "./IssueDocumentDialog";
+import { PdfPreviewButton } from "./PdfPreview";
 
-const LINK =
-  "inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium hover:bg-surface-muted";
+const LINK = buttonClass({ variant: "secondary", size: "sm" });
 
 export function RabDocumentsCard({
   rabId,
@@ -54,10 +54,10 @@ export function RabDocumentsCard({
   return (
     <Card title="Dokumen & ekspor">
       <div className="flex flex-wrap gap-2">
-        <a href={previewPdfUrl(rabId, version.version_no)} target="_blank" rel="noopener" className={LINK}>
-          <Eye aria-hidden className="size-3.5" />
-          Pratinjau PDF
-        </a>
+        <PdfPreviewButton
+          url={previewPdfUrl(rabId, version.version_no)}
+          title={`Pratinjau ${rabNumber} versi ${version.version_no}`}
+        />
         <a href={exportXlsxUrl(rabId, version.version_no)} download className={LINK}>
           <FileSpreadsheet aria-hidden className="size-3.5" />
           Ekspor XLSX
@@ -120,7 +120,7 @@ export function RabDocumentsCard({
           {items.map((d) => (
             <li key={d.id} className="space-y-1 p-2.5 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link href={`/dokumen/${d.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                <Link href={`/dokumen/${d.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                   {d.number}
                 </Link>
                 <StatusBadge tone={DOCUMENT_STATUS[d.status].tone}>{DOCUMENT_STATUS[d.status].label}</StatusBadge>
@@ -130,10 +130,7 @@ export function RabDocumentsCard({
                 {d.issued_by && ` · ${d.issued_by.full_name}`}
               </p>
               <div className="flex gap-2">
-                <a href={documentFileUrl(d.id, "pdf")} target="_blank" rel="noopener" className={LINK}>
-                  <Download aria-hidden className="size-3.5" />
-                  PDF
-                </a>
+                <PdfPreviewButton url={documentFileUrl(d.id, "pdf")} title={d.number} label="Lihat PDF" />
                 <a href={documentFileUrl(d.id, "xlsx", true)} className={LINK}>
                   <Download aria-hidden className="size-3.5" />
                   XLSX

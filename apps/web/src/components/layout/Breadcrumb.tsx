@@ -13,7 +13,7 @@ export function Breadcrumb() {
     <nav aria-label="Breadcrumb" className="min-w-0">
       <ol className="flex items-center gap-1 text-sm text-muted">
         <li>
-          <Link href="/" className="hover:text-foreground">
+          <Link href="/" className="inline-flex min-h-11 items-center hover:text-foreground">
             Beranda
           </Link>
         </li>

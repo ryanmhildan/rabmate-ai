@@ -5,7 +5,7 @@ import { Download, FileText } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Field";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -18,11 +18,11 @@ import { documentFileUrl } from "@/lib/documents";
 import { formatMoney, formatTanggalWaktu } from "@/lib/format";
 import { DOCUMENT_STATUS, DOCUMENT_TYPE } from "@/lib/labels";
 import type { IssuedDocument, Page } from "@/lib/types";
+import { PdfPreviewButton } from "./PdfPreview";
 
 const PAGE_SIZE = 20;
 const COLUMNS = 6;
-const DOWNLOAD =
-  "inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium hover:bg-surface-muted";
+const DOWNLOAD = buttonClass({ variant: "secondary", size: "sm", className: "gap-1 px-2" });
 
 export function DocumentsPage() {
   const [q, setQ] = useState("");
@@ -108,7 +108,7 @@ export function DocumentsPage() {
               {items.map((d) => (
                 <tr key={d.id} className="hover:bg-surface-muted/50">
                   <Td>
-                    <Link href={`/dokumen/${d.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                    <Link href={`/dokumen/${d.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                       {d.number}
                     </Link>
                     <div className="text-xs text-muted">{DOCUMENT_TYPE[d.doc_type]}</div>
@@ -120,23 +120,31 @@ export function DocumentsPage() {
                   </Td>
                   <Td className="text-xs">
                     <div>{formatTanggalWaktu(d.issued_at)}</div>
-                    <div className="text-muted">{d.issued_by?.full_name ?? "—"}</div>
+                    <div className="text-muted">{d.issued_by?.full_name ?? "-"}</div>
                   </Td>
                   <Td className="text-right">
                     <div className="flex justify-end gap-1">
-                      {d.files.map((f) => (
-                        <a
-                          key={f.format}
-                          href={documentFileUrl(d.id, f.format, f.format === "xlsx")}
-                          target={f.format === "pdf" ? "_blank" : undefined}
-                          rel="noopener"
-                          className={DOWNLOAD}
-                          aria-label={`Unduh ${f.format.toUpperCase()} ${d.number}`}
-                        >
-                          <Download aria-hidden className="size-3" />
-                          {f.format.toUpperCase()}
-                        </a>
-                      ))}
+                      {d.files.map((f) =>
+                        f.format === "pdf" ? (
+                          <PdfPreviewButton
+                            key={f.format}
+                            url={documentFileUrl(d.id, "pdf")}
+                            title={d.number}
+                            label="PDF"
+                            ariaLabel={`Lihat PDF ${d.number}`}
+                          />
+                        ) : (
+                          <a
+                            key={f.format}
+                            href={documentFileUrl(d.id, f.format, true)}
+                            className={DOWNLOAD}
+                            aria-label={`Unduh ${f.format.toUpperCase()} ${d.number}`}
+                          >
+                            <Download aria-hidden className="size-3" />
+                            {f.format.toUpperCase()}
+                          </a>
+                        ),
+                      )}
                     </div>
                   </Td>
                 </tr>

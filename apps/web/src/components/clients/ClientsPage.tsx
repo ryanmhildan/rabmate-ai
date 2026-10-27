@@ -150,10 +150,10 @@ export function ClientsPage() {
                   </Td>
                   <Td>{CLIENT_TYPE[client.client_type]}</Td>
                   <Td>
-                    <div>{client.contact_person ?? "—"}</div>
+                    <div>{client.contact_person ?? "-"}</div>
                     <div className="text-xs text-muted">{client.email ?? client.phone ?? ""}</div>
                   </Td>
-                  <Td>{client.city ?? "—"}</Td>
+                  <Td>{client.city ?? "-"}</Td>
                   <Td>
                     <StatusBadge tone={client.is_active ? "success" : "neutral"}>
                       {client.is_active ? "Aktif" : "Nonaktif"}
@@ -208,7 +208,7 @@ export function ClientsPage() {
         message={
           <>
             Klien <strong>{deleting?.name}</strong> akan dihapus permanen. Klien yang sudah dipakai
-            proyek tidak dapat dihapus — nonaktifkan saja melalui tombol ubah.
+            proyek tidak dapat dihapus; nonaktifkan saja melalui tombol ubah.
           </>
         }
         confirmLabel="Hapus"

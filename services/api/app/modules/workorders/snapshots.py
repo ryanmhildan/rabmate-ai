@@ -21,7 +21,7 @@ from app.modules.billing.snapshots import (
     payment_term_values,
 )
 from app.modules.billing.workflow import STATUS_LABELS
-from app.modules.documents.models import DocumentSettings, DocumentType
+from app.modules.documents.models import DocumentLetterhead, DocumentSettings, DocumentType
 from app.modules.documents.snapshot import (
     PROJECT_TYPE_LABELS,
     SCHEMA_VERSION,
@@ -64,6 +64,7 @@ def build_spk_snapshot(
     *,
     organization: Organization,
     settings_row: DocumentSettings | None,
+    letterhead: DocumentLetterhead | None,
     spk: Spk,
     quotation: Quotation,
     rab: RabDocument,
@@ -81,7 +82,7 @@ def build_spk_snapshot(
     ):
         raise SnapshotIntegrityError("Jumlah termin tidak sama dengan nilai kontrak.")
 
-    settings = settings_values(settings_row)
+    settings = settings_values(settings_row, letterhead)
     approved = _approved(spk.status.value)
     has_tax = quotation.tax_label is not None and quotation.tax_rate_percent is not None
     items = sorted(version.items, key=lambda i: i.position)
@@ -150,6 +151,7 @@ def build_bast_snapshot(
     *,
     organization: Organization,
     settings_row: DocumentSettings | None,
+    letterhead: DocumentLetterhead | None,
     bast: Bast,
     spk: Spk,
     contract: dict[uuid.UUID, ContractItem],
@@ -189,7 +191,7 @@ def build_bast_snapshot(
             }
         )
 
-    settings = settings_values(settings_row)
+    settings = settings_values(settings_row, letterhead)
     approved = _approved(bast.status.value)
     return {
         "schema_version": SCHEMA_VERSION,

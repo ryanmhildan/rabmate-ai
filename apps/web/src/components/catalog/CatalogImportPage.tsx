@@ -5,7 +5,7 @@ import { ArrowLeft, Download, FileUp } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { FormError } from "@/components/ui/Field";
@@ -291,17 +291,17 @@ function PreviewRow({ row }: { row: ImportRow }) {
         )}
       </Td>
       <Td>
-        <div className="font-medium">{d.name ?? "—"}</div>
+        <div className="font-medium">{d.name ?? "-"}</div>
         <div className="text-xs text-muted">
           {[d.code, d.brand, d.unit && `per ${d.unit}`].filter(Boolean).join(" · ")}
         </div>
       </Td>
       <Td className="text-right tabular whitespace-nowrap">
-        {d.price ? formatUnitPrice(d.price, d.currency ?? "IDR") : "—"}
+        {d.price ? formatUnitPrice(d.price, d.currency ?? "IDR") : "-"}
       </Td>
-      <Td className="whitespace-nowrap">{d.observed_at ? formatTanggal(d.observed_at) : "—"}</Td>
+      <Td className="whitespace-nowrap">{d.observed_at ? formatTanggal(d.observed_at) : "-"}</Td>
       <Td className="max-w-48 text-xs break-words text-muted">
-        {[d.supplier, d.source_reference].filter(Boolean).join(" · ") || "—"}
+        {[d.supplier, d.source_reference].filter(Boolean).join(" · ") || "-"}
       </Td>
       <Td className="max-w-64 text-xs text-danger">
         {row.errors.length > 0 && (
@@ -321,7 +321,7 @@ function TemplateLink({ format, label }: { format: "xlsx" | "csv"; label: string
     <a
       href={`${API_BASE}/price-catalog/imports/template?format=${format}`}
       download
-      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-surface px-3.5 text-sm font-medium hover:bg-surface-muted"
+      className={buttonClass({ variant: "secondary" })}
     >
       <Download aria-hidden className="size-4" />
       {label}

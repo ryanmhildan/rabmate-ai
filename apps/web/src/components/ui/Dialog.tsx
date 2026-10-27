@@ -52,14 +52,16 @@ export function Dialog({ open, onClose, title, description, children, footer, si
               type="button"
               aria-label="Tutup"
               onClick={onClose}
-              className="rounded-md p-1 text-muted hover:bg-surface-muted"
+              className="-mt-1.5 -mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-muted hover:text-foreground sm:size-9"
             >
-              <X className="size-4" />
+              <X aria-hidden className="size-4" />
             </button>
           </header>
           <div className="overflow-y-auto px-5 py-4">{children}</div>
           {footer && (
-            <footer className="flex justify-end gap-2 border-t border-border px-5 py-3">{footer}</footer>
+            <footer className="flex flex-wrap justify-end gap-2 border-t border-border px-5 py-3">
+              {footer}
+            </footer>
           )}
         </div>
       )}

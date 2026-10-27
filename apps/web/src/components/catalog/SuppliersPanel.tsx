@@ -110,10 +110,10 @@ export function SuppliersPanel() {
                 <tr key={supplier.id} className="hover:bg-surface-muted/50">
                   <Td className="font-medium">{supplier.name}</Td>
                   <Td>
-                    <div>{supplier.contact_person ?? "—"}</div>
+                    <div>{supplier.contact_person ?? "-"}</div>
                     <div className="text-xs text-muted">{supplier.phone ?? supplier.email ?? ""}</div>
                   </Td>
-                  <Td>{supplier.city ?? "—"}</Td>
+                  <Td>{supplier.city ?? "-"}</Td>
                   <Td>
                     <StatusBadge tone={supplier.is_active ? "success" : "neutral"}>
                       {supplier.is_active ? "Aktif" : "Nonaktif"}

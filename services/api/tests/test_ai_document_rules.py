@@ -197,7 +197,7 @@ SOURCES: list[dict[str, Any]] = [
                     "unit": "m",
                     "unit_price": "Rp 4.300",
                     "subtotal": "Rp 1.311.500",
-                    "price_source": "import: Dokumen 'penawaran.pdf' — belum diverifikasi",
+                    "price_source": "import: Dokumen 'penawaran.pdf', belum diverifikasi",
                 },
                 {
                     "no": 2,
@@ -299,14 +299,14 @@ def test_chat_request_puts_rules_data_and_question_in_order() -> None:
         "Rp 10.946.265.",
         "Jumlah item: 6; item belum ada harga: 1 (Patch panel 24 port).",
         "Daftar item:",
-        "1. Kabel UTP — 305 m — harga satuan Rp 4.300, subtotal Rp 1.311.500, sumber harga: "
-        "import: Dokumen 'penawaran.pdf' — belum diverifikasi",
-        "2. Patch panel 24 port — 2 unit — belum ada harga",
+        "1. Kabel UTP: 305 m, harga satuan Rp 4.300, subtotal Rp 1.311.500, sumber harga: "
+        "import: Dokumen 'penawaran.pdf', belum diverifikasi",
+        "2. Patch panel 24 port: 2 unit, belum ada harga",
         "",
         "[S3] Katalog: Konektor RJ45",
         "Satuan katalog: pcs.",
-        "Harga Rp 2.500,50 per pcs (belum diverifikasi), tanggal 2026-10-01, pemasok —, "
-        "referensi —.",
+        "Harga Rp 2.500,50 per pcs (belum diverifikasi), tanggal 2026-10-01, pemasok -, "
+        "referensi -.",
         "",
         "Tidak tersedia:",
         "- Invoice dan pembayaran (Anda tidak memiliki izin keuangan).",

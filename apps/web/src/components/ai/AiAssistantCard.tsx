@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, FormError, Input, Select, Textarea } from "@/components/ui/Field";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { TAB_LIST, tabClass } from "@/components/ui/Tabs";
 import { api, errorMessage } from "@/lib/api";
 import { useCan } from "@/lib/auth";
 import { formatTanggalWaktu } from "@/lib/format";
@@ -120,13 +121,13 @@ export function AiAssistantCard({
       </div>
       {status.data && !ready && <p className="text-xs text-muted">{status.data.message}</p>}
       <p className="text-xs text-muted">
-        Diproses model lokal lewat Hermes di komputer ini — tidak dikirim ke layanan cloud. Hasilnya draft untuk diperiksa;
+        Diproses model lokal lewat Hermes di komputer ini, tidak dikirim ke layanan cloud. Hasilnya draft untuk diperiksa;
         tidak ada yang masuk ke RAB tanpa konfirmasi Anda, dan AI tidak pernah menentukan harga.
       </p>
 
       {canUse && ready && (
         <div className="space-y-3">
-          <div role="tablist" aria-label="Jenis permintaan AI" className="flex gap-1 border-b border-border">
+          <div role="tablist" aria-label="Jenis permintaan AI" className={TAB_LIST}>
             {(["rab_draft", "extract_items", "extract_document"] as const).map((k) => (
               <button
                 key={k}
@@ -137,9 +138,7 @@ export function AiAssistantCard({
                   setKind(k);
                   setFormError(null);
                 }}
-                className={`-mb-px border-b-2 px-2 py-1.5 text-xs font-medium ${
-                  kind === k ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
-                }`}
+                className={tabClass(kind === k, "sm")}
               >
                 {AI_RUN_KIND[k]}
               </button>

@@ -1,5 +1,5 @@
 // Mirrors the backend response schemas (services/api/app/modules/*/schemas.py).
-// Money, rates and quantities are decimal strings — never parse them into numbers for math.
+// Money, rates and quantities are decimal strings: never parse them into numbers for math.
 
 export type Permission =
   | "org.read"
@@ -549,6 +549,18 @@ export type DocumentSettings = {
   bast_terms: string | null;
   version: number;
   updated_at: string | null;
+};
+
+/** The organization's uploaded letterhead (kop surat); the PNG is a separate download. */
+export type Letterhead = {
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  width_px: number;
+  height_px: number;
+  uploaded_at: string;
+  uploaded_by: UserBrief | null;
 };
 
 // --------------------------------------------------------------------------- billing

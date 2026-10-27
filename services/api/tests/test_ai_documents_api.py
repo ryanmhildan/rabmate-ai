@@ -281,7 +281,7 @@ def test_document_extraction_cites_pages_and_applies_with_the_document_as_source
         .order_by(RabItem.position)
     ).scalars()
     assert kabel_item.price_source == (
-        "Dokumen 'penawaran.pdf', Halaman 1, baris 3 — diekstrak AI lokal, belum diverifikasi"
+        "Dokumen 'penawaran.pdf', Halaman 1, baris 3, diekstrak AI lokal, belum diverifikasi"
     )
     assert konektor_item.unit_price is None
     assert "Sumber: Dokumen 'penawaran.pdf', Halaman 1, baris 4." in (konektor_item.notes or "")
@@ -455,7 +455,7 @@ def test_chat_answers_from_cited_sources_and_flags_what_it_cannot_back(
         ["[S2]", rab.number],
         ["[S3]", "Katalog:"],
     ]
-    assert "1. Rak server — 1 unit — harga satuan Rp 2.500.000" in data
+    assert "1. Rak server: 1 unit, harga satuan Rp 2.500.000" in data
     assert rab.id not in prompt and item["id"] not in prompt  # database ids stay out
 
     # A follow-up carries the previous turn, without its old citation markers.

@@ -109,7 +109,7 @@ export function decimalString(options: {
     .refine((value) => value === "" || pattern.test(value), {
       message: `${options.label}: tulis angka seperti 1250000, 1.250.000, atau 18,5 (maks. ${options.fractionDigits} desimal).`,
     })
-    // "95.000" reads as ninety-five thousand in Indonesian but would be stored as 95 — refuse to
+    // "95.000" reads as ninety-five thousand in Indonesian but would be stored as 95, so refuse to
     // guess (the spreadsheet import applies the same rule).
     .refine((value) => !AMBIGUOUS_THOUSANDS.test(value), {
       message: `${options.label} ambigu: "95.000" bisa berarti 95 atau 95 ribu. Tulis 95000 untuk sembilan puluh lima ribu, atau 95,0 bila memang desimal.`,

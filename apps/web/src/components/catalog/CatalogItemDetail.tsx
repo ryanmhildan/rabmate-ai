@@ -107,10 +107,10 @@ export function CatalogItemDetail() {
         </Card>
         <Card title="Detail">
           <dl className="grid gap-2 text-sm">
-            <Info label="Kategori">{item.category ?? "—"}</Info>
-            <Info label="Merek">{item.brand ?? "—"}</Info>
+            <Info label="Kategori">{item.category ?? "-"}</Info>
+            <Info label="Merek">{item.brand ?? "-"}</Info>
             <Info label="Spesifikasi">
-              <span className="whitespace-pre-wrap">{item.specification ?? "—"}</span>
+              <span className="whitespace-pre-wrap">{item.specification ?? "-"}</span>
             </Info>
             {item.notes && (
               <Info label="Catatan">
@@ -248,7 +248,7 @@ function ObservationRow({
             {expired && " (kedaluwarsa)"}
           </div>
         ) : (
-          <div>—</div>
+          <div>-</div>
         )}
         {o.location && <div>{o.location}</div>}
       </Td>

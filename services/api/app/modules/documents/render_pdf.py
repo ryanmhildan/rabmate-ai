@@ -26,6 +26,7 @@ from app.modules.documents.pdf_common import (
     footer_left,
     label_value_table,
     letterhead,
+    letterhead_image,
     page_furniture,
     preview_banner,
     signature_block,
@@ -37,7 +38,11 @@ from app.modules.documents.pdf_common import (
 __all__ = ["esc", "items_table", "render_rab_pdf", "totals_flowables"]
 
 
-def render_rab_pdf(snapshot: dict[str, Any], verification_code: str | None = None) -> bytes:
+def render_rab_pdf(
+    snapshot: dict[str, Any],
+    verification_code: str | None = None,
+    letterhead_png: bytes | None = None,
+) -> bytes:
     document = snapshot["document"]
     settings = snapshot["settings"]
     rab = snapshot["rab"]
@@ -50,7 +55,7 @@ def render_rab_pdf(snapshot: dict[str, Any], verification_code: str | None = Non
     width = content_width(pagesize)
 
     number = document["number"] or "PRATINJAU"
-    title = f"{number} — {document['title']}"
+    title = f"{number} · {document['title']}"
 
     if preview:
         number_line = "<font color='#B42318'><b>PRATINJAU</b></font>"
@@ -70,10 +75,11 @@ def render_rab_pdf(snapshot: dict[str, Any], verification_code: str | None = Non
         styles,
         width,
         accent,
+        image=letterhead_image(settings, letterhead_png),
     )
     if preview:
         story += preview_banner(
-            "PRATINJAU — dokumen belum diterbitkan. Status versi: "
+            "PRATINJAU: dokumen belum diterbitkan. Status versi: "
             f"{esc(rab['status_label'])}. Nilai dapat berubah sampai RAB disetujui "
             "dan dokumen diterbitkan.",
             styles,
@@ -150,7 +156,7 @@ def _info_table(snapshot: dict[str, Any], styles: Styles, width: float) -> Flowa
     client = snapshot["client"]
     rab = snapshot["rab"]
 
-    client_text = "—"
+    client_text = "-"
     if client:
         parts = [f"<b>{esc(client['name'])}</b>"]
         if client["contact_person"]:
@@ -159,7 +165,7 @@ def _info_table(snapshot: dict[str, Any], styles: Styles, width: float) -> Flowa
         if address:
             parts.append(esc(address))
         client_text = "<br/>".join(parts)
-    schedule = "—"
+    schedule = "-"
     if project["start_date"] or project["end_date"]:
         schedule = f"{fmt.tanggal(project['start_date'])} s.d. {fmt.tanggal(project['end_date'])}"
 
@@ -167,11 +173,11 @@ def _info_table(snapshot: dict[str, Any], styles: Styles, width: float) -> Flowa
         (
             (
                 "Proyek",
-                f"<b>{esc(project['number'])}</b> — {esc(project['name'])}",
+                f"<b>{esc(project['number'])}</b> · {esc(project['name'])}",
                 "Klien",
                 client_text,
             ),
-            ("Jenis", esc(project["type_label"]), "Lokasi", esc(project["location"] or "—")),
+            ("Jenis", esc(project["type_label"]), "Lokasi", esc(project["location"] or "-")),
             ("Judul RAB", esc(rab["title"]), "Jadwal", esc(schedule)),
             ("Mata uang", esc(rab["currency"]), "", ""),
         ),
@@ -256,7 +262,7 @@ def items_table(
                 source = item["price_source_label"] or ""
                 if item["price_source"]:
                     source = f"{source}: {item['price_source']}" if source else item["price_source"]
-                row.append(Paragraph(f"<font size='7'>{esc(source or '—')}</font>", styles.cell))
+                row.append(Paragraph(f"<font size='7'>{esc(source or '-')}</font>", styles.cell))
             rows.append(row)
         if group["title"]:
             rows.append(

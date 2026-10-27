@@ -675,7 +675,7 @@ def source_reference(run: AiRun, source: dict[str, Any]) -> str | None:
 
 
 def _document_source(run: AiRun, source: dict[str, Any]) -> str:
-    return f"{source_reference(run, source)} — diekstrak AI lokal, belum diverifikasi"[:500]
+    return f"{source_reference(run, source)}, diekstrak AI lokal, belum diverifikasi"[:500]
 
 
 def apply_run(
@@ -730,7 +730,7 @@ def apply_run(
             if not source.get("unit") or not same_unit(source["unit"], chosen.unit):
                 raise BusinessValidationError(
                     "Harga dari dokumen hanya dapat dipakai dengan satuan yang sama "
-                    f"({source.get('unit') or '—'}).",
+                    f"({source.get('unit') or '-'}).",
                     details=[{"loc": [*loc, "unit"], "msg": "Satuan berbeda dari dokumen."}],
                 )
             unit_price = Decimal(stated)

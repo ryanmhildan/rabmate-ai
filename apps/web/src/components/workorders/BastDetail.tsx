@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Eye, Plus, Stamp, Trash2 } from "lucide-react";
+import { ArrowLeft, Ban, Plus, Stamp, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { z } from "zod";
 import { AuditList } from "@/components/audit/AuditList";
 import { ApprovalTimeline, WorkflowButtons } from "@/components/billing/DocWorkflow";
 import { IssueDocumentDialog } from "@/components/documents/IssueDocumentDialog";
+import { PdfPreviewButton } from "@/components/documents/PdfPreview";
 import { VoidDocumentDialog } from "@/components/documents/VoidDocumentDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -26,9 +27,6 @@ import { formatQuantity, formatTanggal, formatTanggalWaktu } from "@/lib/format"
 import { applyServerErrors, blankToNull, decimalString, optionalText } from "@/lib/forms";
 import { BAST_KIND, DOC_STATUS } from "@/lib/labels";
 import type { Bast, ContractItemProgress, SpkProgress } from "@/lib/types";
-
-const LINK =
-  "inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium hover:bg-surface-muted";
 
 export function BastDetail() {
   const { id } = useParams<{ id: string }>();
@@ -89,10 +87,10 @@ export function BastDetail() {
         }
         actions={
           <>
-            <a href={`${API_BASE}/bast/${id}/preview.pdf`} target="_blank" rel="noopener" className={LINK}>
-              <Eye aria-hidden className="size-3.5" />
-              Pratinjau PDF
-            </a>
+            <PdfPreviewButton
+              url={`${API_BASE}/bast/${id}/preview.pdf`}
+              title={`Pratinjau ${bast.number ?? "BAST"}`}
+            />
             <WorkflowButtons<Bast> base={`/bast/${id}`} actions={bast.allowed_actions} onDone={saved} />
             {bast.can_issue && (
               <Button size="sm" onClick={() => setIssuing(true)}>
@@ -159,7 +157,7 @@ export function BastDetail() {
         summary={
           <p>
             BAST <strong>{bast.title}</strong> ({bast.items.length} baris, serah terima{" "}
-            {bast.handover_date ? formatTanggal(bast.handover_date) : "—"}) akan diberi nomor dan diterbitkan sebagai PDF.
+            {bast.handover_date ? formatTanggal(bast.handover_date) : "-"}) akan diberi nomor dan diterbitkan sebagai PDF.
             Volume diperiksa ulang terhadap kontrak saat terbit.
           </p>
         }
@@ -398,7 +396,7 @@ function BastForm({
                     value={items[index]?.rab_item_id ?? ""}
                     onChange={(e) => pickContractItem(index, e.target.value)}
                   >
-                    <option value="">— Di luar rincian kontrak —</option>
+                    <option value="">Di luar rincian kontrak</option>
                     {contract.map((c) => (
                       <option key={c.rab_item_id} value={c.rab_item_id}>
                         {c.no}. {c.name} (sisa {formatQuantity(c.remaining_quantity)} {c.unit})
@@ -480,11 +478,11 @@ function BastText({ bast, contract }: { bast: Bast; contract: ContractItemProgre
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-xs text-muted">Tanggal serah terima</dt>
-          <dd>{bast.handover_date ? formatTanggal(bast.handover_date) : "—"}</dd>
+          <dd>{bast.handover_date ? formatTanggal(bast.handover_date) : "-"}</dd>
         </div>
         <div>
           <dt className="text-xs text-muted">Lokasi</dt>
-          <dd>{bast.location ?? "—"}</dd>
+          <dd>{bast.location ?? "-"}</dd>
         </div>
       </dl>
       <div className="overflow-x-auto">
@@ -508,7 +506,7 @@ function BastText({ bast, contract }: { bast: Bast; contract: ContractItemProgre
                   <td className="py-1.5 pr-2 text-right tabular whitespace-nowrap">
                     {formatQuantity(i.quantity)} {i.unit}
                   </td>
-                  <td className="py-1.5 text-xs">{i.condition ?? "—"}</td>
+                  <td className="py-1.5 text-xs">{i.condition ?? "-"}</td>
                 </tr>
               );
             })}
@@ -537,7 +535,7 @@ function Party({ role, name, title }: { role: string; name: string | null; title
       <p className="text-xs text-muted">{role}</p>
       <p>
         {name ?? <span className="text-muted">Belum diisi</span>}
-        {title && <span className="text-muted"> — {title}</span>}
+        {title && <span className="text-muted">, {title}</span>}
       </p>
     </div>
   );

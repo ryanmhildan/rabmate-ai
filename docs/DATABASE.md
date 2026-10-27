@@ -10,6 +10,7 @@ PostgreSQL 17, dikelola dengan Alembic (`services/api/alembic/versions`). Revisi
 | `0004` | Katalog harga: ekstensi `pg_trgm`, `suppliers`, `price_catalog_items` (+ index trigram nama), `price_observations`, `import_jobs`; `rab_items.price_observation_id` |
 | `0005` | Dokumen: `document_settings`, `documents` (snapshot JSONB + hash), `document_files` (berkas `bytea`); `import_jobs.rab_version_id` |
 | `0006` | Penagihan: `quotations`, `payment_terms`, `invoices`, `invoice_items`, `payments`, `payment_allocations`; `documents.quotation_id/invoice_id` + CHECK jenis dokumen diperluas |
+| `0010` | Kop surat: `document_letterheads` (maks. satu per organisasi, gambar PNG `bytea`) |
 
 ## Konvensi
 
@@ -49,6 +50,7 @@ erDiagram
     import_jobs ||--o{ price_observations : "import_job_id"
     price_observations ||--o{ rab_items : "price_observation_id (FK komposit)"
     organizations ||--|| document_settings : "template (maks. 1)"
+    organizations ||--o| document_letterheads : "kop surat gambar (maks. 1)"
     rab_versions ||--o{ documents : "rab_version_id (FK komposit)"
     documents ||--o{ document_files : "pdf, xlsx (FK komposit)"
     rab_versions ||--o{ import_jobs : "rab_version_id (impor item)"
@@ -102,6 +104,7 @@ erDiagram
 | `import_jobs` | Pratinjau & hasil impor spreadsheet (ADR-027) | `rows`/`warnings`/`result` JSONB; status `previewed → committed \| discarded` |
 
 | `document_settings` | Template dokumen per organisasi (ADR-034) | `UNIQUE (organization_id)`; CHECK warna `#RRGGBB`; `version` |
+| `document_letterheads` | Kop surat gambar per organisasi: nama tampilan, PNG hasil olahan server (`bytea`, dimuat hanya saat dipakai), ukuran piksel, SHA-256, pengunggah (ADR-048) | `UNIQUE (organization_id)`; CHECK ukuran > 0 dan = `octet_length(content)`, SHA-256 heksadesimal, lebar/tinggi > 0; terpisah dari `document_settings` agar unggah tidak menaikkan `version` template |
 | `documents` | Dokumen terbit: nomor, status `issued`/`void`, snapshot JSONB + `snapshot_sha256`, total, kunci idempotensi (ADR-030/031) | `UNIQUE (organization_id, number)`, `UNIQUE (organization_id, idempotency_key)`; **unique index parsial `uq_documents_one_active_per_rab_version`**; FK komposit ke `rab_versions` dan `projects`; CHECK `void` ⇔ `voided_at`, dokumen RAB wajib `rab_version_id`, total ≥ 0 |
 | `document_files` | Berkas hasil render yang disimpan saat terbit | `UNIQUE (document_id, format)`; CHECK `size_bytes = octet_length(content)`, SHA-256 heksadesimal; konten dimuat hanya saat diunduh |
 

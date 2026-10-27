@@ -204,7 +204,7 @@ def gather_sources(
     )
     found.add(
         "proyek",
-        f"Proyek {project.number} — {project.name}",
+        f"Proyek {project.number} · {project.name}",
         {"type": "project", "id": str(project_id)},
         project.model_dump(mode="json"),
     )
@@ -216,7 +216,7 @@ def gather_sources(
         for rab in rabs.rabs:
             found.add(
                 "rab",
-                f"{rab.number} v{rab.version_no} ({rab.status}) — {rab.title}",
+                f"{rab.number} v{rab.version_no} ({rab.status}) · {rab.title}",
                 {"type": "rab", "id": str(rab.id)},
                 _without_ids(rab.model_dump(mode="json")),
             )

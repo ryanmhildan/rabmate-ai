@@ -100,7 +100,7 @@ def test_money_and_numbers_never_go_through_float() -> None:
     assert fmt.money("1250000.00") == "Rp 1.250.000"
     assert fmt.money("1250000.50") == "Rp 1.250.000,50"
     assert fmt.money("0.00") == "Rp 0"
-    assert fmt.money(None) == "—"
+    assert fmt.money(None) == "-"
     assert fmt.money("123.40", "USD") == "USD 123,40"
     assert fmt.money("999999999999999999.99") == "Rp 999.999.999.999.999.999,99"
     assert fmt.unit_price("33.3350") == "Rp 33,335"
@@ -118,7 +118,7 @@ def test_dates_are_shown_in_jakarta_time() -> None:
     late_utc = datetime(2026, 10, 18, 20, 0, tzinfo=UTC)  # 03.00 WIB the next day
     assert fmt.tanggal(late_utc) == "19 Oktober 2026"
     assert fmt.tanggal_waktu(late_utc.isoformat()) == "19 Oktober 2026 pukul 03.00 WIB"
-    assert fmt.tanggal(None) == "—"
+    assert fmt.tanggal(None) == "-"
 
 
 # --------------------------------------------------------------------------- snapshot hash
@@ -172,8 +172,8 @@ def test_preview_pdf_is_watermarked_and_unnumbered() -> None:
         document=PREVIEW, rab={"status_label": "Draft", "approved_by": None, "approved_at": None}
     )
     text = "\n".join(pdf_text(render_rab_pdf(snapshot)))
-    assert "PRATINJAU — dokumen belum diterbitkan. Status versi: Draft" in text
-    assert "PRATINJAU — bukan dokumen resmi" in text
+    assert "PRATINJAU: dokumen belum diterbitkan. Status versi: Draft" in text
+    assert "PRATINJAU: bukan dokumen resmi" in text
     assert "RAB-2026-0001/V1" not in text
     assert "Diterbitkan oleh" not in text
 

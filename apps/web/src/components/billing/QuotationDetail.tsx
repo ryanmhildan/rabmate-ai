@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Check, Eye, Handshake, Receipt, Stamp, Trash2, X } from "lucide-react";
+import { ArrowLeft, Ban, Check, Handshake, Receipt, Stamp, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,12 +11,14 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AuditList } from "@/components/audit/AuditList";
 import { IssueDocumentDialog } from "@/components/documents/IssueDocumentDialog";
+import { PdfPreviewButton } from "@/components/documents/PdfPreview";
 import { VoidDocumentDialog } from "@/components/documents/VoidDocumentDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Field, FormError, Input, Textarea } from "@/components/ui/Field";
 import { FullPageMessage } from "@/components/ui/FullPageMessage";
+import { KeyFigure } from "@/components/ui/KeyFigure";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { API_BASE, ApiError, api, errorMessage } from "@/lib/api";
@@ -27,9 +29,6 @@ import { CLIENT_RESPONSE, DOC_STATUS, PAYMENT_STATE } from "@/lib/labels";
 import type { ClientResponse, Invoice, Quotation, Spk } from "@/lib/types";
 import { ApprovalTimeline, WorkflowButtons } from "./DocWorkflow";
 import { TermsEditor, rowsFrom } from "./TermsEditor";
-
-const LINK =
-  "inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium hover:bg-surface-muted";
 
 export function QuotationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -111,10 +110,7 @@ export function QuotationDetail() {
         }
         actions={
           <>
-            <a href={`${API_BASE}/quotations/${id}/preview.pdf`} target="_blank" rel="noopener" className={LINK}>
-              <Eye aria-hidden className="size-3.5" />
-              Pratinjau PDF
-            </a>
+            <PdfPreviewButton url={`${API_BASE}/quotations/${id}/preview.pdf`} title={`Pratinjau ${q.number}`} />
             <WorkflowButtons<Quotation> base={`/quotations/${id}`} actions={q.allowed_actions} onDone={saved} />
             {q.can_issue && (
               <Button size="sm" onClick={() => setIssuing(true)}>
@@ -200,14 +196,14 @@ export function QuotationDetail() {
               {q.tax_label && (
                 <Row label={`${q.tax_label} ${formatPercent(q.tax_rate_percent)}`} value={formatMoney(q.tax_amount, q.currency)} />
               )}
-              <Row label="Total" value={formatMoney(q.grand_total, q.currency)} strong />
+              <KeyFigure label="Total" value={formatMoney(q.grand_total, q.currency)} />
             </dl>
             <p className="text-xs text-muted">Nilai disalin dari RAB yang disetujui dan tidak dapat diubah di sini.</p>
           </Card>
           <Card title="Penerima">
-            <p className="text-sm font-medium">{q.client?.name ?? "—"}</p>
+            <p className="text-sm font-medium">{q.client?.name ?? "-"}</p>
             <p className="text-xs text-muted">
-              {q.project.number} — {q.project.name}
+              {q.project.number} · {q.project.name}
             </p>
           </Card>
           <ApprovalTimeline approvals={q.approvals} />
@@ -352,7 +348,7 @@ function QuotationText({ quotation: q }: { quotation: Quotation }) {
   ];
   return (
     <Card title="Isi penawaran">
-      <p className="text-sm">Berlaku sampai: {q.valid_until ? formatTanggal(q.valid_until) : "—"}</p>
+      <p className="text-sm">Berlaku sampai: {q.valid_until ? formatTanggal(q.valid_until) : "-"}</p>
       {sections.map(
         ([title, text]) =>
           text && (
@@ -395,7 +391,7 @@ function TermsTable({ quotation: q, onInvoiced }: { quotation: Quotation; onInvo
               <td className="py-1.5 pr-2 text-right tabular whitespace-nowrap">{formatMoney(t.amount, q.currency)}</td>
               <td className="py-1.5 pr-2 text-right tabular whitespace-nowrap">{formatMoney(t.tax_amount, q.currency)}</td>
               <td className="py-1.5 pr-2 text-right font-medium tabular whitespace-nowrap">{formatMoney(t.total_amount, q.currency)}</td>
-              <td className="py-1.5 pr-2 whitespace-nowrap">{t.due_date ? formatTanggal(t.due_date) : "—"}</td>
+              <td className="py-1.5 pr-2 whitespace-nowrap">{t.due_date ? formatTanggal(t.due_date) : "-"}</td>
               <td className="py-1.5">
                 {t.invoice ? (
                   <Link href={`/invoice/${t.invoice.id}`} className="text-xs text-primary hover:underline">
@@ -422,7 +418,7 @@ function TermsTable({ quotation: q, onInvoiced }: { quotation: Quotation; onInvo
                     Buat invoice
                   </Button>
                 ) : (
-                  <span className="text-xs text-muted">—</span>
+                  <span className="text-xs text-muted">-</span>
                 )}
               </td>
             </tr>
@@ -445,9 +441,9 @@ function BackLink() {
   );
 }
 
-function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className={`flex justify-between gap-4 ${strong ? "font-semibold" : ""}`}>
+    <div className="flex justify-between gap-4">
       <dt>{label}</dt>
       <dd className="tabular">{value}</dd>
     </div>

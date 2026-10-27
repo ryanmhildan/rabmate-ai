@@ -313,7 +313,7 @@ def test_extraction_keeps_only_written_numbers_and_marks_document_prices(
         kabel_item.price_source_type is not None and kabel_item.price_source_type.value == "import"
     )
     assert kabel_item.price_source == (
-        "Teks dokumen 'penawaran-sumber-jaya.pdf', baris 2 — diekstrak AI lokal, belum diverifikasi"
+        "Teks dokumen 'penawaran-sumber-jaya.pdf', baris 2, diekstrak AI lokal, belum diverifikasi"
     )
     assert panel_item.unit_price is None
 

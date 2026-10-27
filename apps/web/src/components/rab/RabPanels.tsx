@@ -4,6 +4,7 @@ import { AlertCircle, AlertTriangle, Info, Pencil, Plus, Trash2 } from "lucide-r
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { KeyFigure } from "@/components/ui/KeyFigure";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Table, TableMessage, Td, Th } from "@/components/ui/Table";
 import {
@@ -49,7 +50,7 @@ export function ItemsTable({ version, onAdd, onEdit, onDelete }: ItemsTableProps
         <thead>
           <tr>
             <Th className="w-10">No</Th>
-            <Th>Item</Th>
+            <Th className="min-w-44">Item</Th>
             <Th>Jenis</Th>
             <Th className="text-right">Kuantitas</Th>
             <Th className="text-right">Harga satuan</Th>
@@ -92,7 +93,7 @@ export function ItemsTable({ version, onAdd, onEdit, onDelete }: ItemsTableProps
                 )}
               </Td>
               <Td className="tabular text-right font-medium whitespace-nowrap">
-                {item.subtotal === null ? "—" : formatMoney(item.subtotal, version.currency)}
+                {item.subtotal === null ? "-" : formatMoney(item.subtotal, version.currency)}
               </Td>
               <Td className="max-w-48 text-xs">
                 {item.price_source_type && (
@@ -157,7 +158,7 @@ export function TotalsCard({ version, onEdit }: { version: RabVersion; onEdit?: 
       <dl className="space-y-2 text-sm">
         <Row label="Subtotal">{money(totals.subtotal)}</Row>
         <Row label={discountLabel}>
-          {version.discount_type === "none" ? "—" : `− ${money(totals.discount_amount)}`}
+          {version.discount_type === "none" ? "-" : `− ${money(totals.discount_amount)}`}
         </Row>
         <Row label="Dasar pengenaan pajak (DPP)">{money(totals.taxable_base)}</Row>
         <Row
@@ -167,12 +168,9 @@ export function TotalsCard({ version, onEdit }: { version: RabVersion; onEdit?: 
               : "Pajak (belum dikonfigurasi)"
           }
         >
-          {version.tax_label ? money(totals.tax_amount) : "—"}
+          {version.tax_label ? money(totals.tax_amount) : "-"}
         </Row>
-        <div className="flex items-baseline justify-between gap-4 border-t border-border pt-2">
-          <dt className="font-semibold">Grand total</dt>
-          <dd className="tabular text-lg font-semibold">{money(totals.grand_total)}</dd>
-        </div>
+        <KeyFigure label="Grand total" value={money(totals.grand_total)} />
       </dl>
       {totals.unpriced_items > 0 && (
         <p className="rounded-md bg-warning-soft px-3 py-2 text-xs text-warning">

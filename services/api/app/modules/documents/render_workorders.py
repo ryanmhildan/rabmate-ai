@@ -24,6 +24,7 @@ from app.modules.documents.pdf_common import (
     footer_left,
     label_value_table,
     letterhead,
+    letterhead_image,
     page_furniture,
     party_signature_block,
     preview_banner,
@@ -43,7 +44,7 @@ def _internal_notes(record: dict[str, Any], document: dict[str, Any]) -> list[st
     notes = []
     if record["approved_at"]:
         notes.append(
-            f"Disetujui secara internal oleh {record['approved_by'] or '—'} di RABmate AI pada "
+            f"Disetujui secara internal oleh {record['approved_by'] or '-'} di RABmate AI pada "
             f"{fmt.tanggal_waktu(record['approved_at'])}."
         )
     if not document["preview"]:
@@ -73,7 +74,7 @@ def _period(spk: dict[str, Any]) -> str:
         return f"Mulai {fmt.tanggal(start)}"
     if end:
         return f"Selesai {fmt.tanggal(end)}"
-    return "—"
+    return "-"
 
 
 def _finish(
@@ -81,7 +82,7 @@ def _finish(
 ) -> bytes:
     document = snapshot["document"]
     preview = bool(document["preview"])
-    title = f"{document['number'] or 'PRATINJAU'} — {document['title']}"
+    title = f"{document['number'] or 'PRATINJAU'} · {document['title']}"
     return build_pdf(
         story,
         pagesize=A4,
@@ -101,7 +102,11 @@ def _finish(
 # --------------------------------------------------------------------------- SPK
 
 
-def render_spk_pdf(snapshot: dict[str, Any], verification_code: str | None = None) -> bytes:
+def render_spk_pdf(
+    snapshot: dict[str, Any],
+    verification_code: str | None = None,
+    letterhead_png: bytes | None = None,
+) -> bytes:
     document = snapshot["document"]
     settings = snapshot["settings"]
     spk = snapshot["spk"]
@@ -119,11 +124,17 @@ def render_spk_pdf(snapshot: dict[str, Any], verification_code: str | None = Non
         else "Belum diterbitkan"
     )
     story: list[Flowable] = letterhead(
-        company, settings, _header_right(document, date_line), styles, width, accent
+        company,
+        settings,
+        _header_right(document, date_line),
+        styles,
+        width,
+        accent,
+        image=letterhead_image(settings, letterhead_png),
     )
     if preview:
         story += preview_banner(
-            "PRATINJAU — SPK belum diterbitkan dan belum bernomor. Status: "
+            "PRATINJAU: SPK belum diterbitkan dan belum bernomor. Status: "
             f"{esc(spk['status_label'])}.",
             styles,
             width,
@@ -140,14 +151,14 @@ def render_spk_pdf(snapshot: dict[str, Any], verification_code: str | None = Non
                 ),
                 (
                     "Proyek",
-                    f"{esc(project['number'])} — {esc(project['name'])}",
+                    f"{esc(project['number'])} · {esc(project['name'])}",
                     "Referensi",
                     f"Penawaran {esc(spk['quotation_number'])}<br/>"
                     f"{esc(spk['rab_number'])} versi {spk['rab_version_no']}",
                 ),
                 (
                     "Lokasi",
-                    esc(spk["location"] or "—"),
+                    esc(spk["location"] or "-"),
                     "Jangka waktu",
                     esc(_period(spk)),
                 ),
@@ -270,7 +281,11 @@ def _spk_items_table(
 # --------------------------------------------------------------------------- BAST
 
 
-def render_bast_pdf(snapshot: dict[str, Any], verification_code: str | None = None) -> bytes:
+def render_bast_pdf(
+    snapshot: dict[str, Any],
+    verification_code: str | None = None,
+    letterhead_png: bytes | None = None,
+) -> bytes:
     document = snapshot["document"]
     settings = snapshot["settings"]
     bast = snapshot["bast"]
@@ -283,14 +298,20 @@ def render_bast_pdf(snapshot: dict[str, Any], verification_code: str | None = No
     date_line = (
         f"Tanggal serah terima {esc(fmt.tanggal(bast['handover_date']))}"
         if bast["handover_date"]
-        else "Tanggal serah terima —"
+        else "Tanggal serah terima -"
     )
     story: list[Flowable] = letterhead(
-        company, settings, _header_right(document, date_line), styles, width, accent
+        company,
+        settings,
+        _header_right(document, date_line),
+        styles,
+        width,
+        accent,
+        image=letterhead_image(settings, letterhead_png),
     )
     if preview:
         story += preview_banner(
-            "PRATINJAU — BAST belum diterbitkan dan belum bernomor. Status: "
+            "PRATINJAU: BAST belum diterbitkan dan belum bernomor. Status: "
             f"{esc(bast['status_label'])}.",
             styles,
             width,
@@ -307,7 +328,7 @@ def render_bast_pdf(snapshot: dict[str, Any], verification_code: str | None = No
                 ),
                 (
                     "Proyek",
-                    f"{esc(project['number'])} — {esc(project['name'])}",
+                    f"{esc(project['number'])} · {esc(project['name'])}",
                     "Referensi",
                     f"SPK {esc(bast['spk_number'])}<br/>Penawaran {esc(bast['quotation_number'])}",
                 ),
@@ -315,7 +336,7 @@ def render_bast_pdf(snapshot: dict[str, Any], verification_code: str | None = No
                     "Jenis",
                     f"<b>{esc(bast['kind_label'])}</b>",
                     "Lokasi",
-                    esc(bast["location"] or "—"),
+                    esc(bast["location"] or "-"),
                 ),
             ),
             styles,
@@ -326,7 +347,7 @@ def render_bast_pdf(snapshot: dict[str, Any], verification_code: str | None = No
     story.append(Spacer(1, 4 * mm))
     story.append(Paragraph(f"<b>Perihal: {esc(bast['title'])}</b>", styles.body))
     story.append(Spacer(1, 2 * mm))
-    when = fmt.tanggal(bast["handover_date"]) if bast["handover_date"] else "—"
+    when = fmt.tanggal(bast["handover_date"]) if bast["handover_date"] else "-"
     story.append(
         Paragraph(
             f"Berita acara ini mencatat serah terima pada tanggal {esc(when)} atas pekerjaan "
@@ -407,12 +428,12 @@ def _bast_lines_table(
                 Paragraph(description, styles.cell),
                 Paragraph(esc(line["unit"]), styles.cell),
                 Paragraph(
-                    fmt.quantity(ref["contract_quantity"]) if ref else "—", styles.cell_right
+                    fmt.quantity(ref["contract_quantity"]) if ref else "-", styles.cell_right
                 ),
-                Paragraph(fmt.quantity(ref["delivered_before"]) if ref else "—", styles.cell_right),
+                Paragraph(fmt.quantity(ref["delivered_before"]) if ref else "-", styles.cell_right),
                 Paragraph(f"<b>{fmt.quantity(line['quantity'])}</b>", styles.cell_right),
-                Paragraph(fmt.quantity(ref["cumulative"]) if ref else "—", styles.cell_right),
-                Paragraph(esc(line["condition"] or "—"), styles.cell),
+                Paragraph(fmt.quantity(ref["cumulative"]) if ref else "-", styles.cell_right),
+                Paragraph(esc(line["condition"] or "-"), styles.cell),
             ]
         )
     return grid_table(rows, widths, accent)

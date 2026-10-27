@@ -61,12 +61,12 @@ export function ComparePage() {
         <ArrowLeft aria-hidden className="size-4" />
         Kembali ke {rab.data.number}
       </Link>
-      <PageHeader title={`Bandingkan versi — ${rab.data.title}`} description={rab.data.number} />
+      <PageHeader title={`Bandingkan versi: ${rab.data.title}`} description={rab.data.number} />
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span>Dari</span>
         <Select aria-label="Versi awal" value={from || ""} onChange={(e) => choose({ from: Number(e.target.value) })} className="w-24">
-          <option value="">—</option>
+          <option value="">-</option>
           {versions.map((n) => (
             <option key={n} value={n}>
               v{n}
@@ -75,7 +75,7 @@ export function ComparePage() {
         </Select>
         <span>ke</span>
         <Select aria-label="Versi pembanding" value={to || ""} onChange={(e) => choose({ to: Number(e.target.value) })} className="w-24">
-          <option value="">—</option>
+          <option value="">-</option>
           {versions.map((n) => (
             <option key={n} value={n}>
               v{n}
@@ -157,11 +157,11 @@ export function ComparePage() {
 }
 
 function Diff({ before, after }: { before: string | null; after: string | null }) {
-  if (before === after) return <span>{after ?? "—"}</span>;
+  if (before === after) return <span>{after ?? "-"}</span>;
   return (
     <span className="flex flex-col items-end">
-      <span className="text-muted line-through">{before ?? "—"}</span>
-      <span>{after ?? "—"}</span>
+      <span className="text-muted line-through">{before ?? "-"}</span>
+      <span>{after ?? "-"}</span>
     </span>
   );
 }

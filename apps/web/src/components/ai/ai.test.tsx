@@ -184,7 +184,7 @@ describe("AiAssistantCard", () => {
   });
 });
 
-describe("AiAssistantCard — dari berkas", () => {
+describe("AiAssistantCard: dari berkas", () => {
   it("uploads a file, selects it and asks for an extraction from it", async () => {
     const saved: SourceDocument & { duplicate: boolean } = {
       id: "doc1",

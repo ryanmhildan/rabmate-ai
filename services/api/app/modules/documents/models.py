@@ -82,6 +82,40 @@ class DocumentSettings(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __mapper_args__ = {"version_id_col": version}
 
 
+class DocumentLetterhead(UUIDPrimaryKeyMixin, Base):
+    """The organization's uploaded letterhead image (kop surat); one per organization at most.
+
+    Kept apart from DocumentSettings so uploading an image does not bump the template's version
+    (and discard someone's unsaved template edits). The bytes are the server's own PNG re-encoding
+    of the upload, never the uploaded file itself. Issued documents record its SHA-256 in their
+    snapshot; their stored PDFs keep the image that was current when they were issued.
+    """
+
+    __tablename__ = "document_letterheads"
+    __table_args__ = (
+        CheckConstraint(
+            "size_bytes > 0 AND size_bytes = octet_length(content)", name="size_matches"
+        ),
+        CheckConstraint("sha256 ~ '^[0-9a-f]{64}$'", name="sha256_hex"),
+        CheckConstraint("width_px > 0 AND height_px > 0", name="dimensions_positive"),
+    )
+
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"), unique=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(100))
+    size_bytes: Mapped[int]
+    sha256: Mapped[str] = mapped_column(String(64))
+    width_px: Mapped[int]
+    height_px: Mapped[int]
+    content: Mapped[bytes] = mapped_column(LargeBinary, deferred=True)
+    uploaded_by_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
+
+    uploaded_by: Mapped[User | None] = relationship(foreign_keys=[uploaded_by_id], lazy="joined")
+
+
 class IssuedDocument(UUIDPrimaryKeyMixin, Base):
     """An issued business document: frozen snapshot + rendered files. Immutable except voiding."""
 

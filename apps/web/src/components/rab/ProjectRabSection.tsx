@@ -70,7 +70,7 @@ export function ProjectRabSection({ project }: { project: Project }) {
       <NewRabDialog
         open={creating}
         onClose={() => setCreating(false)}
-        project={{ id: project.id, label: `${project.number} — ${project.name}` }}
+        project={{ id: project.id, label: `${project.number} · ${project.name}` }}
       />
     </Card>
   );

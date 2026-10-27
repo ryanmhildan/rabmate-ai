@@ -18,7 +18,7 @@ export function sourceDocumentFileUrl(documentId: string): string {
   return `${API_BASE}/source-documents/${documentId}/file`;
 }
 
-/** "64,3 KB" — display only. */
+/** "64,3 KB", display only. */
 export function formatBytes(size: number): string {
   if (size < 1024) return `${size} B`;
   const kb = size / 1024;

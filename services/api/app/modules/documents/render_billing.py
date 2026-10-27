@@ -33,6 +33,7 @@ from app.modules.documents.pdf_common import (
     footer_left,
     label_value_table,
     letterhead,
+    letterhead_image,
     page_furniture,
     preview_banner,
     signature_block,
@@ -44,7 +45,7 @@ from app.modules.documents.render_pdf import items_table, totals_flowables
 
 def client_markup(client: dict[str, Any] | None, *, with_tax_id: bool = False) -> str:
     if not client:
-        return "—"
+        return "-"
     parts = [f"<b>{esc(client['name'])}</b>"]
     if client.get("contact_person"):
         parts.append(f"u.p. {esc(client['contact_person'])}")
@@ -87,7 +88,11 @@ def grid_table(rows: list[list[Any]], widths: list[float], accent: colors.Color)
 # --------------------------------------------------------------------------- quotation
 
 
-def render_quotation_pdf(snapshot: dict[str, Any], verification_code: str | None = None) -> bytes:
+def render_quotation_pdf(
+    snapshot: dict[str, Any],
+    verification_code: str | None = None,
+    letterhead_png: bytes | None = None,
+) -> bytes:
     document = snapshot["document"]
     settings = snapshot["settings"]
     quotation = snapshot["quotation"]
@@ -98,7 +103,7 @@ def render_quotation_pdf(snapshot: dict[str, Any], verification_code: str | None
     pagesize = A4
     width = content_width(pagesize)
     number = quotation["number"]
-    title = f"{number} — {document['title']}"
+    title = f"{number} · {document['title']}"
 
     when = (
         f"Dibuat {esc(fmt.tanggal_waktu(document['generated_at']))}"
@@ -116,10 +121,13 @@ def render_quotation_pdf(snapshot: dict[str, Any], verification_code: str | None
     ]
     if quotation["valid_until"]:
         right.append(f"Berlaku sampai {esc(fmt.tanggal(quotation['valid_until']))}")
-    story: list[Flowable] = letterhead(snapshot["company"], settings, right, styles, width, accent)
+    image = letterhead_image(settings, letterhead_png)
+    story: list[Flowable] = letterhead(
+        snapshot["company"], settings, right, styles, width, accent, image=image
+    )
     if preview:
         story += preview_banner(
-            f"PRATINJAU — penawaran belum diterbitkan. Status: {esc(quotation['status_label'])}.",
+            f"PRATINJAU: penawaran belum diterbitkan. Status: {esc(quotation['status_label'])}.",
             styles,
             width,
         )
@@ -135,7 +143,7 @@ def render_quotation_pdf(snapshot: dict[str, Any], verification_code: str | None
                 ),
                 (
                     "Proyek",
-                    f"{esc(project['number'])} — {esc(project['name'])}",
+                    f"{esc(project['number'])} · {esc(project['name'])}",
                     "Referensi",
                     f"{esc(quotation['rab_number'])} versi {quotation['rab_version_no']}",
                 ),
@@ -244,7 +252,7 @@ def terms_table(
                 Paragraph(fmt.money(term["amount"], currency), styles.cell_right),
                 Paragraph(fmt.money(term["tax_amount"], currency), styles.cell_right),
                 Paragraph(f"<b>{fmt.money(term['total_amount'], currency)}</b>", styles.cell_right),
-                Paragraph(esc(" · ".join(info) or "—"), styles.cell),
+                Paragraph(esc(" · ".join(info) or "-"), styles.cell),
             ]
         )
     return grid_table(rows, widths, accent)
@@ -253,7 +261,11 @@ def terms_table(
 # --------------------------------------------------------------------------- invoice
 
 
-def render_invoice_pdf(snapshot: dict[str, Any], verification_code: str | None = None) -> bytes:
+def render_invoice_pdf(
+    snapshot: dict[str, Any],
+    verification_code: str | None = None,
+    letterhead_png: bytes | None = None,
+) -> bytes:
     document = snapshot["document"]
     settings = snapshot["settings"]
     invoice = snapshot["invoice"]
@@ -265,7 +277,7 @@ def render_invoice_pdf(snapshot: dict[str, Any], verification_code: str | None =
     pagesize = A4
     width = content_width(pagesize)
     number = document["number"]
-    title = f"{number or 'PRATINJAU'} — {document['title']}"
+    title = f"{number or 'PRATINJAU'} · {document['title']}"
 
     right = [
         esc(document["title"].upper()),
@@ -275,12 +287,15 @@ def render_invoice_pdf(snapshot: dict[str, Any], verification_code: str | None =
         else "Belum diterbitkan",
         f"Jatuh tempo <b>{esc(fmt.tanggal(invoice['due_date']))}</b>"
         if invoice["due_date"]
-        else "Jatuh tempo —",
+        else "Jatuh tempo -",
     ]
-    story: list[Flowable] = letterhead(snapshot["company"], settings, right, styles, width, accent)
+    image = letterhead_image(settings, letterhead_png)
+    story: list[Flowable] = letterhead(
+        snapshot["company"], settings, right, styles, width, accent, image=image
+    )
     if preview:
         story += preview_banner(
-            "PRATINJAU — invoice belum diterbitkan dan belum bernomor. Status: "
+            "PRATINJAU: invoice belum diterbitkan dan belum bernomor. Status: "
             f"{esc(invoice['status_label'])}.",
             styles,
             width,
@@ -301,13 +316,13 @@ def render_invoice_pdf(snapshot: dict[str, Any], verification_code: str | None =
                     "Ditagihkan kepada",
                     client_markup(snapshot["client"], with_tax_id=True),
                     "Proyek",
-                    f"{esc(project['number'])} — {esc(project['name'])}",
+                    f"{esc(project['number'])} · {esc(project['name'])}",
                 ),
                 (
                     "Perihal",
                     f"<b>{esc(invoice['title'])}</b>",
                     "Referensi",
-                    " · ".join(reference) or "—",
+                    " · ".join(reference) or "-",
                 ),
             ),
             styles,

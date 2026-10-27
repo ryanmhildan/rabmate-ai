@@ -1,27 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  Ban,
-  CalendarClock,
-  Check,
-  FileSignature,
-  Receipt,
-  Building2,
-  Calculator,
-  ClipboardCheck,
-  FileText,
-  FolderKanban,
-  Handshake,
-  PackageCheck,
-  Stamp,
-  Wallet,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { AuditItem } from "@/components/audit/AuditList";
 import { Card } from "@/components/ui/Card";
+import { HIGHLIGHT } from "@/components/ui/KeyFigure";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { api, errorMessage } from "@/lib/api";
 import { useMe } from "@/lib/auth";
@@ -30,6 +14,16 @@ import { PROJECT_STATUS, options } from "@/lib/labels";
 import type { DashboardSummary } from "@/lib/types";
 import { SystemStatus } from "./SystemStatus";
 
+type Amounts = { currency: string; total: string; count?: number }[];
+
+type Action = { label: string; count: number; href: string; detail?: string; urgent?: boolean };
+
+type Figure = { label: string; value: string; href?: string; note?: string };
+
+/**
+ * The dashboard answers "what is waiting on me?" first, then "where does the money stand?".
+ * Plain counts sit below as a reference strip. Sections the role cannot see come back as null.
+ */
 export function DashboardPage() {
   const me = useMe();
   const summary = useQuery({
@@ -52,159 +46,12 @@ export function DashboardPage() {
         </p>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat
-          icon={FolderKanban}
-          label="Proyek"
-          loading={summary.isPending}
-          value={data?.projects_total.toLocaleString("id-ID")}
-          href="/proyek"
-        />
-        <Stat
-          icon={Building2}
-          label="Klien aktif"
-          loading={summary.isPending}
-          value={data?.clients_active.toLocaleString("id-ID")}
-          href="/klien"
-        />
-        <Stat
-          icon={Wallet}
-          label="Anggaran proyek terbuka"
-          loading={summary.isPending}
-          value={
-            data && data.open_budget.length > 0
-              ? data.open_budget.map((b) => formatMoney(b.total, b.currency)).join(" · ")
-              : "—"
-          }
-          note="Prospek, berjalan, dan ditunda yang memiliki anggaran."
-        />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+        <ActionList actions={data ? actionsFrom(data) : null} />
+        <MoneyPanel data={data} loading={summary.isPending} />
       </div>
 
-      {data?.rab && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat icon={Calculator} label="Draft RAB" loading={false} value={data.rab.draft.toLocaleString("id-ID")} href="/rab?status=draft" />
-          <Stat icon={ClipboardCheck} label="RAB menunggu approval" loading={false} value={data.rab.in_review.toLocaleString("id-ID")} href="/approval" />
-          <Stat
-            icon={Wallet}
-            label="Total estimasi disetujui"
-            loading={false}
-            value={
-              data.rab.approved_total.length > 0
-                ? data.rab.approved_total.map((t) => formatMoney(t.total, t.currency)).join(" · ")
-                : "—"
-            }
-            note={`${data.rab.approved} RAB dengan versi disetujui.`}
-          />
-        </div>
-      )}
-
-      {data?.billing && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat
-            icon={Receipt}
-            label="Sisa tagihan (invoice terbit)"
-            loading={false}
-            value={amounts(data.billing.outstanding)}
-            note={`${data.billing.outstanding.reduce((n, t) => n + t.count, 0)} invoice belum lunas.`}
-            href="/invoice?payment_state=unpaid"
-          />
-          <Stat
-            icon={AlertTriangle}
-            label="Lewat jatuh tempo"
-            loading={false}
-            value={amounts(data.billing.overdue)}
-            note={`${data.billing.overdue.reduce((n, t) => n + t.count, 0)} invoice.`}
-            href="/invoice?overdue=true"
-          />
-          <Stat
-            icon={Wallet}
-            label="Diterima bulan ini"
-            loading={false}
-            value={amounts(data.billing.received_this_month)}
-            href="/invoice?tab=pembayaran"
-          />
-          <Stat
-            icon={CalendarClock}
-            label="Termin jatuh tempo ≤ 30 hari"
-            loading={false}
-            value={data.billing.terms_due_soon.toLocaleString("id-ID")}
-            note="Termin penawaran diterima yang belum ditagih."
-            href="/penawaran"
-          />
-        </div>
-      )}
-      {data?.quotations && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Stat
-            icon={FileSignature}
-            label="Penawaran menunggu tanggapan klien"
-            loading={false}
-            value={data.quotations.awaiting_response.toLocaleString("id-ID")}
-            note={`${data.quotations.draft + data.quotations.in_review} masih draft/review.`}
-            href="/penawaran"
-          />
-          <Stat
-            icon={Check}
-            label="Penawaran diterima klien"
-            loading={false}
-            value={data.quotations.accepted.toLocaleString("id-ID")}
-            href="/penawaran"
-          />
-        </div>
-      )}
-      {data?.workorders && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat
-            icon={Handshake}
-            label="Penawaran diterima tanpa SPK"
-            loading={false}
-            value={data.workorders.accepted_without_spk.toLocaleString("id-ID")}
-            note={`${data.workorders.spk_in_review} SPK menunggu review.`}
-            href="/penawaran"
-          />
-          <Stat
-            icon={FolderKanban}
-            label="SPK berjalan"
-            loading={false}
-            value={data.workorders.spk_open.toLocaleString("id-ID")}
-            note="SPK terbit yang belum memiliki BAST akhir terbit."
-            href="/spk-bast"
-          />
-          <Stat
-            icon={PackageCheck}
-            label="BAST menunggu review"
-            loading={false}
-            value={data.workorders.bast_in_review.toLocaleString("id-ID")}
-            href="/spk-bast?tab=bast"
-          />
-        </div>
-      )}
-      {data?.documents && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat
-            icon={Stamp}
-            label="RAB siap diterbitkan"
-            loading={false}
-            value={data.documents.approved_rab_not_issued.toLocaleString("id-ID")}
-            note="Versi disetujui yang belum memiliki dokumen terbit."
-            href="/rab?status=approved"
-          />
-          <Stat
-            icon={FileText}
-            label="Dokumen terbit"
-            loading={false}
-            value={data.documents.issued.toLocaleString("id-ID")}
-            href="/dokumen?status=issued"
-          />
-          <Stat
-            icon={Ban}
-            label="Dokumen dibatalkan"
-            loading={false}
-            value={data.documents.void.toLocaleString("id-ID")}
-            href="/dokumen?status=void"
-          />
-        </div>
-      )}
+      <Overview figures={data ? overviewFrom(data) : null} />
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
@@ -212,7 +59,7 @@ export function DashboardPage() {
             {data && data.projects_total === 0 ? (
               <p className="text-sm text-muted">
                 Belum ada proyek.{" "}
-                <Link href="/proyek" className="text-primary hover:underline">
+                <Link href="/proyek" className="font-medium text-primary underline-offset-2 hover:underline">
                   Buat proyek pertama
                 </Link>
                 .
@@ -222,7 +69,7 @@ export function DashboardPage() {
                 {options(PROJECT_STATUS).map(({ value, label }) => (
                   <li key={value} className="rounded-md bg-surface-muted px-3 py-2">
                     <p className="text-xs text-muted">{label}</p>
-                    <p className="tabular text-lg font-semibold">
+                    <p className="tabular text-lg font-bold">
                       {summary.isPending ? "…" : (data?.projects_by_status[value] ?? 0)}
                     </p>
                   </li>
@@ -246,50 +93,252 @@ export function DashboardPage() {
   );
 }
 
-function Stat({
-  icon: Icon,
-  label,
-  value,
-  loading,
-  href,
-  note,
-}: {
-  icon: typeof Wallet;
-  label: string;
-  value: ReactNode;
-  loading: boolean;
-  href?: string;
-  note?: string;
-}) {
-  const body = (
-    <div className="h-full rounded-lg border border-border bg-surface p-4">
-      <p className="flex items-center gap-2 text-sm text-muted">
-        <Icon aria-hidden className="size-4" />
-        {label}
-      </p>
-      {loading ? (
-        <div className="mt-2 h-7 w-24 animate-pulse rounded bg-surface-muted" />
-      ) : (
-        <p
-          className={`tabular mt-1 font-semibold ${
-            typeof value === "string" && value.length > 14 ? "text-lg" : "text-2xl"
-          }`}
-        >
-          {value}
+// --------------------------------------------------------------------------- what needs action
+
+/** Queues in the order they cost money or block someone, overdue invoices first. */
+export function actionsFrom(data: DashboardSummary): Action[] {
+  const actions: Action[] = [];
+  if (data.billing) {
+    actions.push({
+      label: "Invoice lewat jatuh tempo",
+      count: countOf(data.billing.overdue),
+      detail: amounts(data.billing.overdue),
+      href: "/invoice?overdue=true",
+      urgent: true,
+    });
+    actions.push({
+      label: "Termin jatuh tempo dalam 30 hari",
+      count: data.billing.terms_due_soon,
+      detail: "Termin penawaran diterima yang belum ditagih.",
+      href: "/penawaran",
+    });
+  }
+  if (data.rab) {
+    actions.push({ label: "RAB menunggu approval", count: data.rab.in_review, href: "/approval" });
+  }
+  if (data.documents) {
+    actions.push({
+      label: "RAB disetujui, belum diterbitkan",
+      count: data.documents.approved_rab_not_issued,
+      href: "/rab?status=approved",
+    });
+  }
+  if (data.workorders) {
+    actions.push({
+      label: "Penawaran diterima tanpa SPK",
+      count: data.workorders.accepted_without_spk,
+      href: "/penawaran",
+    });
+    actions.push({ label: "SPK menunggu review", count: data.workorders.spk_in_review, href: "/spk-bast" });
+    actions.push({ label: "BAST menunggu review", count: data.workorders.bast_in_review, href: "/spk-bast?tab=bast" });
+  }
+  if (data.quotations) {
+    actions.push({
+      label: "Penawaran menunggu tanggapan klien",
+      count: data.quotations.awaiting_response,
+      href: "/penawaran",
+    });
+  }
+  return actions.filter((action) => action.count > 0);
+}
+
+function ActionList({ actions }: { actions: Action[] | null }) {
+  return (
+    <section aria-labelledby="dashboard-actions" className="flex flex-col rounded-lg border border-border bg-surface">
+      <header className="border-b border-border px-4 py-3">
+        <h2 id="dashboard-actions" className="text-[15px] font-semibold">
+          Perlu tindakan
+        </h2>
+      </header>
+      {actions === null ? (
+        <div aria-hidden className="space-y-3 p-4">
+          {[0, 1, 2].map((row) => (
+            <div key={row} className="h-8 animate-pulse rounded bg-surface-muted" />
+          ))}
+        </div>
+      ) : actions.length === 0 ? (
+        <p className="grid flex-1 place-items-center px-4 py-8 text-center text-sm text-muted">
+          Tidak ada antrean yang menunggu Anda.
         </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {actions.map((action) => (
+            <li key={action.label}>
+              <Link
+                href={action.href}
+                className="flex min-h-14 items-center gap-4 px-4 py-2.5 transition-colors hover:bg-surface-muted focus-visible:-outline-offset-2"
+              >
+                <span
+                  className={`tabular w-10 shrink-0 text-right text-2xl font-bold ${action.urgent ? "text-danger" : ""}`}
+                >
+                  {action.count.toLocaleString("id-ID")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{action.label}</span>
+                  {action.detail && <span className="block text-xs text-muted">{action.detail}</span>}
+                </span>
+                <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" />
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
-      {note && <p className="mt-1 text-xs text-muted">{note}</p>}
-    </div>
-  );
-  return href ? (
-    <Link href={href} className="block rounded-lg hover:ring-2 hover:ring-primary/20">
-      {body}
-    </Link>
-  ) : (
-    body
+    </section>
   );
 }
 
-function amounts(rows: { currency: string; total: string }[]): string {
-  return rows.length ? rows.map((t) => formatMoney(t.total, t.currency)).join(" · ") : "—";
+// --------------------------------------------------------------------------- money
+
+function MoneyPanel({ data, loading }: { data: DashboardSummary | undefined; loading: boolean }) {
+  const billing = data?.billing;
+  const rows: Figure[] = [];
+  if (billing) {
+    rows.push({ label: "Diterima bulan ini", value: amounts(billing.received_this_month), href: "/invoice?tab=pembayaran" });
+    rows.push({ label: "Lewat jatuh tempo", value: amounts(billing.overdue), href: "/invoice?overdue=true" });
+  }
+  if (data?.rab) {
+    rows.push({
+      label: "Total estimasi disetujui",
+      value: amounts(data.rab.approved_total),
+      note: `${data.rab.approved} RAB dengan versi disetujui.`,
+    });
+  }
+  if (data) {
+    rows.push({
+      label: "Anggaran proyek terbuka",
+      value: amounts(data.open_budget),
+      note: "Prospek, berjalan, dan ditunda yang memiliki anggaran.",
+    });
+  }
+
+  return (
+    <section aria-labelledby="dashboard-money" className="rounded-lg border border-border bg-surface">
+      <header className="border-b border-border px-4 py-3">
+        <h2 id="dashboard-money" className="text-[15px] font-semibold">
+          Keuangan
+        </h2>
+      </header>
+      {loading ? (
+        <div aria-hidden className="space-y-3 p-4">
+          <div className="h-10 w-48 animate-pulse rounded bg-surface-muted" />
+          <div className="h-5 animate-pulse rounded bg-surface-muted" />
+          <div className="h-5 animate-pulse rounded bg-surface-muted" />
+        </div>
+      ) : (
+        <>
+          {/* The single stabilo figure on this screen (DESIGN.md). */}
+          {billing && (
+            <Link
+              href="/invoice?payment_state=unpaid"
+              className="block border-b border-border px-4 py-4 transition-colors hover:bg-surface-muted focus-visible:-outline-offset-2"
+            >
+              <span className="block text-sm text-muted">Sisa tagihan invoice terbit</span>
+              <span className="mt-1.5 block text-2xl leading-snug sm:text-3xl">
+                <mark className={HIGHLIGHT}>{amounts(billing.outstanding)}</mark>
+              </span>
+              <span className="mt-1.5 block text-xs text-muted">
+                {countOf(billing.outstanding).toLocaleString("id-ID")} invoice belum lunas.
+              </span>
+            </Link>
+          )}
+          <dl className="divide-y divide-border text-sm">
+            {rows.map((row) => (
+              <div
+                key={row.label}
+                className="relative flex min-h-11 flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 py-2.5 has-[a:hover]:bg-surface-muted"
+              >
+                <dt className="text-muted">
+                  {row.href ? (
+                    // The link's ::after covers the whole row, so the row is the tap target.
+                    <Link
+                      href={row.href}
+                      className="underline-offset-2 after:absolute after:inset-0 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
+                    >
+                      {row.label}
+                    </Link>
+                  ) : (
+                    row.label
+                  )}
+                </dt>
+                <dd className="tabular font-semibold">{row.value}</dd>
+                {row.note && <dd className="w-full text-xs text-muted">{row.note}</dd>}
+              </div>
+            ))}
+          </dl>
+        </>
+      )}
+    </section>
+  );
+}
+
+// --------------------------------------------------------------------------- reference counts
+
+function overviewFrom(data: DashboardSummary): Figure[] {
+  const figures: Figure[] = [
+    { label: "Proyek", value: count(data.projects_total), href: "/proyek" },
+    { label: "Klien aktif", value: count(data.clients_active), href: "/klien" },
+  ];
+  if (data.rab) figures.push({ label: "Draft RAB", value: count(data.rab.draft), href: "/rab?status=draft" });
+  if (data.quotations) {
+    figures.push({ label: "Penawaran diterima", value: count(data.quotations.accepted), href: "/penawaran" });
+  }
+  if (data.workorders) figures.push({ label: "SPK berjalan", value: count(data.workorders.spk_open), href: "/spk-bast" });
+  if (data.documents) {
+    figures.push({ label: "Dokumen terbit", value: count(data.documents.issued), href: "/dokumen?status=issued" });
+    figures.push({ label: "Dokumen dibatalkan", value: count(data.documents.void), href: "/dokumen?status=void" });
+  }
+  return figures;
+}
+
+function Overview({ figures }: { figures: Figure[] | null }) {
+  return (
+    // Each cell draws its right and bottom edge; the -1px margins push the outermost edges under the
+    // clipped frame, so a short last row leaves plain surface instead of a grey block.
+    <section aria-label="Jumlah data" className="overflow-hidden rounded-lg border border-border bg-surface">
+      <ul className="-mr-px -mb-px grid grid-cols-2 sm:grid-cols-4 xl:grid-flow-col xl:grid-cols-none xl:auto-cols-fr">
+        {(figures ?? PLACEHOLDER_FIGURES).map((figure) => {
+          const body = (
+            <>
+              <span className="block text-xs text-muted">{figure.label}</span>
+              <span className="tabular mt-0.5 block text-xl font-bold">{figure.value}</span>
+            </>
+          );
+          return (
+            <li key={figure.label} className="border-r border-b border-border">
+              {figure.href ? (
+                <Link
+                  href={figure.href}
+                  className="block h-full px-4 py-3 transition-colors hover:bg-surface-muted focus-visible:-outline-offset-2"
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div className="h-full px-4 py-3">{body}</div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+const PLACEHOLDER_FIGURES: Figure[] = ["Proyek", "Klien aktif", "Draft RAB", "Penawaran diterima"].map((label) => ({
+  label,
+  value: "…",
+}));
+
+// --------------------------------------------------------------------------- helpers
+
+function count(value: number): string {
+  return value.toLocaleString("id-ID");
+}
+
+function countOf(rows: Amounts): number {
+  return rows.reduce((n, row) => n + (row.count ?? 0), 0);
+}
+
+/** No rows means nothing in that bucket, which reads clearer as "Rp 0" than as a dash. */
+function amounts(rows: Amounts): string {
+  return rows.length ? rows.map((t) => formatMoney(t.total, t.currency)).join(" · ") : formatMoney("0", "IDR");
 }

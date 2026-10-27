@@ -13,6 +13,7 @@ import { ApiError, api, errorMessage } from "@/lib/api";
 import { useCan } from "@/lib/auth";
 import { applyServerErrors, blankToNull, optionalText } from "@/lib/forms";
 import type { DocumentSettings } from "@/lib/types";
+import { LetterheadCard } from "./LetterheadCard";
 
 export const documentSettingsSchema = z.object({
   tagline: optionalText(200),
@@ -59,9 +60,24 @@ export function DocumentSettingsPanel() {
     queryKey: ["document-settings"],
     queryFn: ({ signal }) => api.get<DocumentSettings>("/document-settings", { signal }),
   });
-  if (settings.isPending) return <p className="text-sm text-muted">Memuat template…</p>;
-  if (settings.isError) return <p className="text-sm text-danger">{errorMessage(settings.error)}</p>;
-  return <DocumentSettingsForm key={settings.data.version} settings={settings.data} />;
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-muted">
+        Nama, alamat, kontak, dan NPWP perusahaan diambil dari <strong>Profil perusahaan</strong>, kecuali bila kop
+        surat gambar diunggah. Kolom yang kosong tidak dicetak, jadi tidak ada data yang dikarang. Perubahan template
+        tidak mengubah dokumen yang sudah terbit.
+      </p>
+      {/* Its own card and endpoint: uploading a kop never resets unsaved edits in the form below. */}
+      <LetterheadCard />
+      {settings.isPending ? (
+        <p className="text-sm text-muted">Memuat template…</p>
+      ) : settings.isError ? (
+        <p className="text-sm text-danger">{errorMessage(settings.error)}</p>
+      ) : (
+        <DocumentSettingsForm key={settings.data.version} settings={settings.data} />
+      )}
+    </div>
+  );
 }
 
 export function DocumentSettingsForm({ settings }: { settings: DocumentSettings }) {
@@ -101,15 +117,15 @@ export function DocumentSettingsForm({ settings }: { settings: DocumentSettings 
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
       <FormError message={formError} />
-      <p className="text-sm text-muted">
-        Nama, alamat, kontak, dan NPWP perusahaan diambil dari <strong>Profil perusahaan</strong>.
-        Kolom yang kosong tidak dicetak — tidak ada data yang dikarang. Perubahan template tidak
-        mengubah dokumen yang sudah terbit.
-      </p>
       <fieldset disabled={!canEdit} className="space-y-5">
-        <Card title="Kop & tampilan">
+        <Card title="Kop teks & tampilan">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Tagline" error={errors.tagline?.message} className="sm:col-span-2">
+            <Field
+              label="Tagline"
+              error={errors.tagline?.message}
+              hint="Dicetak di bawah nama perusahaan. Tidak dicetak bila kop surat gambar dipakai."
+              className="sm:col-span-2"
+            >
               {(a) => <Input {...a} {...register("tagline")} />}
             </Field>
             <Field label="Warna aksen" error={errors.accent_color?.message}>
@@ -120,7 +136,7 @@ export function DocumentSettingsForm({ settings }: { settings: DocumentSettings 
                     aria-label="Pilih warna aksen"
                     value={/^#[0-9A-Fa-f]{6}$/.test(accent) ? accent : "#1F4E79"}
                     onChange={(e) => setValue("accent_color", e.target.value.toUpperCase(), { shouldDirty: true })}
-                    className="h-9 w-12 cursor-pointer rounded-md border border-border bg-surface"
+                    className="h-11 w-12 shrink-0 cursor-pointer rounded-md border border-border-control bg-surface sm:h-9"
                   />
                   <Input className="font-mono" {...a} {...register("accent_color")} />
                 </div>

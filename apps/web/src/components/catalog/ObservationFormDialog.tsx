@@ -141,7 +141,7 @@ function ObservationForm({ onClose, onSubmit }: Omit<Props, "open" | "unit">) {
         <Field label="Supplier" error={errors.supplier_id?.message} className="sm:col-span-3">
           {(a) => (
             <Select {...a} {...register("supplier_id")} disabled={suppliers.isPending}>
-              <option value="">— Tanpa supplier —</option>
+              <option value="">Tanpa supplier</option>
               {suppliers.data?.items.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}

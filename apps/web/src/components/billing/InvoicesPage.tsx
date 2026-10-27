@@ -19,6 +19,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SkeletonRows, Table, TableMessage, Td, Th } from "@/components/ui/Table";
+import { TAB_LIST, tabClass } from "@/components/ui/Tabs";
 import { api, errorMessage, queryString } from "@/lib/api";
 import { useCan } from "@/lib/auth";
 import { formatMoney, formatTanggal } from "@/lib/format";
@@ -37,7 +38,7 @@ export function InvoicesPage() {
         title="Invoice & Pembayaran"
         description="Tagihan per termin atau manual, pembayaran yang diterima, dan sisa tagihan."
       />
-      <div role="tablist" aria-label="Bagian invoice" className="flex gap-1 border-b border-border">
+      <div role="tablist" aria-label="Bagian invoice" className={TAB_LIST}>
         {(
           [
             ["invoices", "Invoice"],
@@ -50,9 +51,7 @@ export function InvoicesPage() {
             role="tab"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === key ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={tabClass(tab === key)}
           >
             {label}
           </button>
@@ -87,7 +86,7 @@ function InvoiceList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
         <SearchInput
           value={q}
           onChange={(v) => {
@@ -113,7 +112,7 @@ function InvoiceList() {
             </option>
           ))}
         </Select>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 items-center gap-2 text-sm whitespace-nowrap lg:min-h-9">
           <input type="checkbox" className="size-4 accent-primary" checked={overdue} onChange={(e) => { setOverdue(e.target.checked); reset(); }} />
           Hanya lewat jatuh tempo
         </label>
@@ -155,7 +154,7 @@ function InvoiceList() {
               {items.map((x) => (
                 <tr key={x.id} className="hover:bg-surface-muted/50">
                   <Td>
-                    <Link href={`/invoice/${x.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                    <Link href={`/invoice/${x.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                       {x.number ?? "(belum bernomor)"}
                     </Link>
                     <div className="text-xs text-muted">{x.kind === "term" ? "Termin" : "Manual"}</div>
@@ -166,7 +165,7 @@ function InvoiceList() {
                   </Td>
                   <Td className="text-right tabular whitespace-nowrap">{formatMoney(x.grand_total, x.currency)}</Td>
                   <Td className="text-right tabular whitespace-nowrap">
-                    {x.status === "issued" ? formatMoney(x.outstanding, x.currency) : "—"}
+                    {x.status === "issued" ? formatMoney(x.outstanding, x.currency) : "-"}
                   </Td>
                   <Td>
                     <div className="flex flex-wrap gap-1">
@@ -177,7 +176,7 @@ function InvoiceList() {
                       {x.overdue && <StatusBadge tone="danger">Lewat jatuh tempo</StatusBadge>}
                     </div>
                   </Td>
-                  <Td className="text-xs whitespace-nowrap">{x.due_date ? formatTanggal(x.due_date) : "—"}</Td>
+                  <Td className="text-xs whitespace-nowrap">{x.due_date ? formatTanggal(x.due_date) : "-"}</Td>
                 </tr>
               ))}
             </tbody>
@@ -245,10 +244,10 @@ function NewInvoiceForm({ onClose }: { onClose: () => void }) {
       <Field label="Proyek" error={errors.project_id?.message} required hint="Hanya proyek yang sudah memiliki klien.">
         {(a) => (
           <Select {...a} {...register("project_id")} disabled={projects.isPending}>
-            <option value="">— Pilih proyek —</option>
+            <option value="">Pilih proyek</option>
             {withClient.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.number} — {p.name} ({p.client?.name})
+                {p.number} · {p.name} ({p.client?.name})
               </option>
             ))}
           </Select>

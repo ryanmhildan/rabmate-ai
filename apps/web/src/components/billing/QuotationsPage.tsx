@@ -106,7 +106,7 @@ export function QuotationsPage() {
               {items.map((x) => (
                 <tr key={x.id} className="hover:bg-surface-muted/50">
                   <Td>
-                    <Link href={`/penawaran/${x.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                    <Link href={`/penawaran/${x.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                       {x.number}
                     </Link>
                     <div className="text-xs text-muted">
@@ -117,7 +117,7 @@ export function QuotationsPage() {
                     {x.subject}
                     <div className="text-xs text-muted">{x.project.name}</div>
                   </Td>
-                  <Td>{x.client?.name ?? "—"}</Td>
+                  <Td>{x.client?.name ?? "-"}</Td>
                   <Td className="text-right tabular whitespace-nowrap">{formatMoney(x.grand_total, x.currency)}</Td>
                   <Td>
                     <div className="flex flex-wrap gap-1">
@@ -130,7 +130,7 @@ export function QuotationsPage() {
                       {x.expired && <StatusBadge tone="danger">Kedaluwarsa</StatusBadge>}
                     </div>
                   </Td>
-                  <Td className="text-xs whitespace-nowrap">{x.valid_until ? formatTanggal(x.valid_until) : "—"}</Td>
+                  <Td className="text-xs whitespace-nowrap">{x.valid_until ? formatTanggal(x.valid_until) : "-"}</Td>
                 </tr>
               ))}
             </tbody>

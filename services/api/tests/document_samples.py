@@ -276,7 +276,7 @@ def invoice_snapshot(**sections: Any) -> dict[str, Any]:
         "project": {"number": "PRJ-2026-0005", "name": "Instalasi Jaringan Kantor Cabang"},
         "invoice": {
             "kind": "term",
-            "title": "Uang muka — Penawaran instalasi jaringan",
+            "title": "Uang muka · Penawaran instalasi jaringan",
             "issue_date": "2026-10-19",
             "due_date": "2026-11-02",
             "notes": "Mohon konfirmasi setelah transfer.",

@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-surface lg:block">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
         <Sidebar />
       </aside>
 
@@ -34,11 +34,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="absolute inset-0 bg-black/40"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="relative h-full w-72 max-w-[85vw] border-r border-border bg-surface shadow-xl">
+          <aside className="relative h-full w-72 max-w-[85vw] bg-sidebar shadow-xl">
             <button
               type="button"
               aria-label="Tutup menu"
-              className="absolute top-3 right-3 rounded-md p-1.5 text-muted hover:bg-surface-muted"
+              className="absolute top-1.5 right-2 grid size-11 place-items-center rounded-md text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground focus-visible:outline-sidebar-foreground"
               onClick={() => setDrawerOpen(false)}
             >
               <X className="size-5" />
@@ -49,15 +49,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface/90 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 sm:px-6">
           <button
             type="button"
-            aria-label="Buka menu"
             aria-expanded={drawerOpen}
-            className="-ml-1 rounded-md p-1.5 text-muted hover:bg-surface-muted lg:hidden"
+            className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-surface-muted lg:hidden"
             onClick={() => setDrawerOpen(true)}
           >
-            <Menu className="size-5" />
+            <Menu aria-hidden className="size-5" />
+            Menu
           </button>
           <Breadcrumb />
           <UserMenu />

@@ -7,8 +7,10 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 
+// Focus ring comes from the global :focus-visible rule. 16px text on phones stops iOS zooming in on focus.
 const CONTROL =
-  "block w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 aria-[invalid=true]:border-danger";
+  "block w-full rounded-md border border-border-control bg-surface px-3 text-base text-foreground placeholder:text-muted focus:border-primary disabled:opacity-60 aria-[invalid=true]:border-danger sm:text-sm";
+const CONTROL_HEIGHT = "h-11 sm:h-9";
 
 type FieldProps = {
   label: string;
@@ -50,7 +52,7 @@ export function Field({ label, error, hint, required, className = "", children }
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className = "", ...props }, ref) {
-    return <input ref={ref} className={`${CONTROL} h-9 ${className}`} {...props} />;
+    return <input ref={ref} className={`${CONTROL} ${CONTROL_HEIGHT} ${className}`} {...props} />;
   },
 );
 
@@ -64,7 +66,7 @@ export const Textarea = forwardRef<
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
   function Select({ className = "", children, ...props }, ref) {
     return (
-      <select ref={ref} className={`${CONTROL} h-9 pr-8 ${className}`} {...props}>
+      <select ref={ref} className={`${CONTROL} ${CONTROL_HEIGHT} pr-8 ${className}`} {...props}>
         {children}
       </select>
     );

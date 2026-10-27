@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Eye, Plus, Stamp, Trash2, Wallet } from "lucide-react";
+import { ArrowLeft, Ban, Plus, Stamp, Trash2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,12 +11,14 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AuditList } from "@/components/audit/AuditList";
 import { IssueDocumentDialog } from "@/components/documents/IssueDocumentDialog";
+import { PdfPreviewButton } from "@/components/documents/PdfPreview";
 import { VoidDocumentDialog } from "@/components/documents/VoidDocumentDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Field, FormError, Input, Textarea } from "@/components/ui/Field";
 import { FullPageMessage } from "@/components/ui/FullPageMessage";
+import { KeyFigure } from "@/components/ui/KeyFigure";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { API_BASE, ApiError, api, errorMessage } from "@/lib/api";
@@ -27,9 +29,6 @@ import { DOC_STATUS, PAYMENT_METHOD, PAYMENT_STATE } from "@/lib/labels";
 import type { Invoice, Payment } from "@/lib/types";
 import { ApprovalTimeline, WorkflowButtons } from "./DocWorkflow";
 import { RecordPaymentDialog } from "./RecordPaymentDialog";
-
-const LINK =
-  "inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium hover:bg-surface-muted";
 
 export function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -97,10 +96,10 @@ export function InvoiceDetail() {
         }
         actions={
           <>
-            <a href={`${API_BASE}/invoices/${id}/preview.pdf`} target="_blank" rel="noopener" className={LINK}>
-              <Eye aria-hidden className="size-3.5" />
-              Pratinjau PDF
-            </a>
+            <PdfPreviewButton
+              url={`${API_BASE}/invoices/${id}/preview.pdf`}
+              title={`Pratinjau ${inv.number ?? "invoice"}`}
+            />
             <WorkflowButtons<Invoice> base={`/invoices/${id}`} actions={inv.allowed_actions} onDone={saved} />
             {inv.can_issue && (
               <Button size="sm" onClick={() => setIssuing(true)}>
@@ -179,21 +178,24 @@ export function InvoiceDetail() {
               {inv.tax_label && (
                 <Row label={`${inv.tax_label} ${formatPercent(inv.tax_rate_percent)}`} value={formatMoney(inv.tax_amount, inv.currency)} />
               )}
-              <Row label="Total tagihan" value={formatMoney(inv.grand_total, inv.currency)} strong />
-              {inv.status === "issued" && (
+              {/* Once issued, what is still owed is the figure that matters; before that, the total. */}
+              {inv.status === "issued" ? (
                 <>
+                  <Row label="Total tagihan" value={formatMoney(inv.grand_total, inv.currency)} strong />
                   <Row label="Sudah dibayar" value={formatMoney(inv.amount_paid, inv.currency)} />
-                  <Row label="Sisa tagihan" value={formatMoney(inv.outstanding, inv.currency)} strong />
+                  <KeyFigure label="Sisa tagihan" value={formatMoney(inv.outstanding, inv.currency)} />
                 </>
+              ) : (
+                <KeyFigure label="Total tagihan" value={formatMoney(inv.grand_total, inv.currency)} />
               )}
             </dl>
             <dl className="space-y-1 border-t border-border pt-2 text-xs text-muted">
               <div>Klien: {inv.client.name}</div>
               <div>
-                Proyek: {inv.project.number} — {inv.project.name}
+                Proyek: {inv.project.number} · {inv.project.name}
               </div>
-              <div>Tanggal terbit: {inv.issue_date ? formatTanggal(inv.issue_date) : "—"}</div>
-              <div>Jatuh tempo: {inv.due_date ? formatTanggal(inv.due_date) : "—"}</div>
+              <div>Tanggal terbit: {inv.issue_date ? formatTanggal(inv.issue_date) : "-"}</div>
+              <div>Jatuh tempo: {inv.due_date ? formatTanggal(inv.due_date) : "-"}</div>
             </dl>
           </Card>
           <ApprovalTimeline approvals={inv.approvals} />
@@ -214,7 +216,7 @@ export function InvoiceDetail() {
           <p>
             Invoice senilai <strong className="tabular">{formatMoney(inv.grand_total, inv.currency)}</strong> untuk{" "}
             <strong>{inv.client.name}</strong> mendapat nomor dan tanggal terbit hari ini; jatuh tempo{" "}
-            {inv.due_date ? formatTanggal(inv.due_date) : "—"}.
+            {inv.due_date ? formatTanggal(inv.due_date) : "-"}.
           </p>
         }
         onClose={() => setIssuing(false)}

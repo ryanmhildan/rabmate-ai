@@ -13,6 +13,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SkeletonRows, Table, TableMessage, Td, Th } from "@/components/ui/Table";
+import { TAB_LIST, tabClass } from "@/components/ui/Tabs";
 import { api, errorMessage, queryString } from "@/lib/api";
 import { formatMoney, formatTanggal } from "@/lib/format";
 import { BAST_KIND, DOC_STATUS, options } from "@/lib/labels";
@@ -29,7 +30,7 @@ export function SpkBastPage() {
         title="SPK & BAST"
         description="Surat perintah kerja dari penawaran yang diterima klien, dan berita acara serah terima pekerjaan/barang."
       />
-      <div role="tablist" aria-label="Bagian SPK dan BAST" className="flex gap-1 border-b border-border">
+      <div role="tablist" aria-label="Bagian SPK dan BAST" className={TAB_LIST}>
         {(
           [
             ["spk", "SPK"],
@@ -42,9 +43,7 @@ export function SpkBastPage() {
             role="tab"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === key ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={tabClass(tab === key)}
           >
             {label}
           </button>
@@ -157,7 +156,7 @@ function SpkList() {
           {items.map((x) => (
             <tr key={x.id} className="hover:bg-surface-muted/50">
               <Td>
-                <Link href={`/spk-bast/spk/${x.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                <Link href={`/spk-bast/spk/${x.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                   {x.number ?? "Draft"}
                 </Link>
                 <div className="text-xs text-muted">{x.quotation.number}</div>
@@ -175,7 +174,7 @@ function SpkList() {
                 </div>
               </Td>
               <Td className="text-xs whitespace-nowrap">
-                {x.start_date ? formatTanggal(x.start_date) : "—"}
+                {x.start_date ? formatTanggal(x.start_date) : "-"}
                 {x.end_date && ` – ${formatTanggal(x.end_date)}`}
               </Td>
             </tr>
@@ -271,7 +270,7 @@ function BastList() {
           {items.map((x) => (
             <tr key={x.id} className="hover:bg-surface-muted/50">
               <Td>
-                <Link href={`/spk-bast/bast/${x.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+                <Link href={`/spk-bast/bast/${x.id}`} className="font-mono text-xs font-medium whitespace-nowrap text-primary hover:underline">
                   {x.number ?? "Draft"}
                 </Link>
                 <div className="text-xs text-muted">{x.spk.number}</div>
@@ -287,7 +286,7 @@ function BastList() {
               <Td>
                 <StatusBadge tone={DOC_STATUS[x.status].tone}>{DOC_STATUS[x.status].label}</StatusBadge>
               </Td>
-              <Td className="text-xs whitespace-nowrap">{x.handover_date ? formatTanggal(x.handover_date) : "—"}</Td>
+              <Td className="text-xs whitespace-nowrap">{x.handover_date ? formatTanggal(x.handover_date) : "-"}</Td>
             </tr>
           ))}
         </tbody>

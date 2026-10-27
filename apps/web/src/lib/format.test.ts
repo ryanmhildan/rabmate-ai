@@ -26,7 +26,7 @@ describe("formatRupiah", () => {
   });
 
   it.each([null, undefined, "", "abc", "1e5", "1,5", "NaN"])("rejects %p", (value) => {
-    expect(formatRupiah(value)).toBe("—");
+    expect(formatRupiah(value)).toBe("-");
   });
 });
 
@@ -37,8 +37,8 @@ describe("formatTanggal", () => {
   });
 
   it("handles invalid and missing input", () => {
-    expect(formatTanggal("not a date")).toBe("—");
-    expect(formatTanggal(null)).toBe("—");
+    expect(formatTanggal("not a date")).toBe("-");
+    expect(formatTanggal(null)).toBe("-");
   });
 });
 
@@ -55,6 +55,6 @@ describe("formatPercent", () => {
   it("trims trailing zeros and uses a decimal comma", () => {
     expect(formatPercent("11.00")).toBe("11%");
     expect(formatPercent("11.50")).toBe("11,5%");
-    expect(formatPercent("x")).toBe("—");
+    expect(formatPercent("x")).toBe("-");
   });
 });

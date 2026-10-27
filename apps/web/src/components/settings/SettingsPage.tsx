@@ -9,6 +9,7 @@ import { AuditList } from "@/components/audit/AuditList";
 import { Button } from "@/components/ui/Button";
 import { Field, FormError, Input } from "@/components/ui/Field";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { TAB_LIST, tabClass } from "@/components/ui/Tabs";
 import { api } from "@/lib/api";
 import { useCan } from "@/lib/auth";
 import { applyServerErrors } from "@/lib/forms";
@@ -35,7 +36,7 @@ export function SettingsPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Pengaturan" description="Profil perusahaan, template dokumen, pengguna, dan keamanan akun." />
-      <div role="tablist" aria-label="Bagian pengaturan" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border">
+      <div role="tablist" aria-label="Bagian pengaturan" className={TAB_LIST}>
         {visible.map((tab) => (
           <button
             key={tab.id}
@@ -45,11 +46,7 @@ export function SettingsPage() {
             aria-selected={active === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => setActive(tab.id)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap ${
-              active === tab.id
-                ? "border-primary font-medium text-primary"
-                : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={tabClass(active === tab.id)}
           >
             {tab.label}
           </button>

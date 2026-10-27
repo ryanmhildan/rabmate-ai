@@ -33,9 +33,10 @@ from app.core.errors import (
 )
 from app.core.pagination import PageParams, apply_sort, escape_like, paginate
 from app.modules.audit import service as audit
-from app.modules.documents import schemas
+from app.modules.documents import letterhead, schemas
 from app.modules.documents.models import (
     DocumentFile,
+    DocumentLetterhead,
     DocumentSettings,
     DocumentStatus,
     DocumentType,
@@ -52,6 +53,7 @@ from app.modules.documents.snapshot import (
     settings_values,
     snapshot_sha256,
 )
+from app.modules.intake.sniff import safe_filename as display_filename
 from app.modules.rab import service as rab_service
 from app.modules.rab.models import RabDocument, RabStatus, RabVersion
 
@@ -174,6 +176,102 @@ def update_settings(
     return settings_row(db, ctx)
 
 
+# --------------------------------------------------------------------------- letterhead
+
+
+def letterhead_row(
+    db: Session, ctx: RequestContext, *, with_content: bool = False
+) -> DocumentLetterhead | None:
+    query = select(DocumentLetterhead).where(
+        DocumentLetterhead.organization_id == ctx.organization_id
+    )
+    if with_content:
+        query = query.options(undefer(DocumentLetterhead.content))
+    return db.execute(query.execution_options(populate_existing=True)).scalar_one_or_none()
+
+
+def letterhead_png(db: Session, ctx: RequestContext, snapshot: dict[str, Any]) -> bytes | None:
+    """Bytes of the letterhead a snapshot names (None when it names none).
+
+    The snapshot and the bytes are read in the same transaction; a mismatch means the image was
+    replaced in between, and the caller should simply try again.
+    """
+    expected = snapshot["settings"].get("letterhead")
+    if not expected:
+        return None
+    row = letterhead_row(db, ctx, with_content=True)
+    if row is None or row.sha256 != expected["sha256"]:
+        raise ConflictError("Kop surat baru saja diganti atau dihapus. Coba lagi.")
+    return row.content
+
+
+def _locked_letterhead(db: Session, ctx: RequestContext) -> DocumentLetterhead | None:
+    # OF: lock only the letterhead row, not the (outer-joined) uploader loaded with it.
+    return db.execute(
+        select(DocumentLetterhead)
+        .where(DocumentLetterhead.organization_id == ctx.organization_id)
+        .with_for_update(of=DocumentLetterhead)
+    ).scalar_one_or_none()
+
+
+def upload_letterhead(
+    db: Session, ctx: RequestContext, filename: str | None, content: bytes
+) -> DocumentLetterhead:
+    try:
+        image = letterhead.normalize(content)
+    except letterhead.LetterheadImageError as exc:
+        raise BusinessValidationError(str(exc)) from None
+    row = _locked_letterhead(db, ctx)
+    replaced = row is not None
+    if row is None:
+        row = DocumentLetterhead(organization_id=ctx.organization_id)
+        db.add(row)
+    row.filename = display_filename(filename)
+    row.content_type = "image/png"
+    row.content = image.png
+    row.size_bytes = len(image.png)
+    row.sha256 = image.sha256
+    row.width_px = image.width
+    row.height_px = image.height
+    row.uploaded_by_id = ctx.user_id
+    row.created_at = _now()
+    try:
+        db.flush()
+    except IntegrityError:
+        # Two first uploads for one organization at the same moment: the other one won.
+        db.rollback()
+        raise ConflictError("Kop surat sedang diunggah dari tempat lain. Coba lagi.") from None
+    action = "letterhead_replace" if replaced else "letterhead_upload"
+    _audit(
+        db,
+        ctx,
+        f"document_settings.{action}",
+        row.id,
+        f"Kop surat: {row.filename}",
+        {"sha256": image.sha256, "width_px": image.width, "height_px": image.height},
+        entity_type="document_letterhead",
+    )
+    db.commit()
+    return row
+
+
+def delete_letterhead(db: Session, ctx: RequestContext) -> None:
+    row = _locked_letterhead(db, ctx)
+    if row is None:
+        raise NotFoundError("Belum ada kop surat yang diunggah.")
+    _audit(
+        db,
+        ctx,
+        "document_settings.letterhead_delete",
+        row.id,
+        f"Kop surat dihapus: {row.filename}",
+        {"sha256": row.sha256},
+        entity_type="document_letterhead",
+    )
+    db.delete(row)
+    db.commit()
+
+
 # --------------------------------------------------------------------------- RAB snapshot
 
 
@@ -201,7 +299,7 @@ def _snapshot(
     try:
         return build_rab_snapshot(
             organization=ctx.organization,
-            settings=settings_values(settings_row(db, ctx)),
+            settings=settings_values(settings_row(db, ctx), letterhead_row(db, ctx)),
             rab=source.rab,
             project=source.rab.project,
             version=source.version,
@@ -219,7 +317,8 @@ def preview_pdf(
     source = _rab_context(db, ctx, rab_id, version_no)
     snapshot = _snapshot(db, ctx, source, None, _now())
     name = safe_filename(f"PRATINJAU_{source.rab.number}_v{version_no}")
-    return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], render_rab_pdf(snapshot))
+    content = render_rab_pdf(snapshot, None, letterhead_png(db, ctx, snapshot))
+    return RenderedFile(f"{name}.pdf", CONTENT_TYPES[FileFormat.PDF], content)
 
 
 def export_xlsx(
@@ -305,13 +404,13 @@ def issue_rab(
             snapshot=snapshot,
             digest=digest,
             files={
-                FileFormat.PDF: render_rab_pdf(snapshot, digest),
+                FileFormat.PDF: render_rab_pdf(snapshot, digest, letterhead_png(db, ctx, snapshot)),
                 FileFormat.XLSX: render_rab_xlsx(snapshot, digest),
             },
             idempotency_key=idempotency_key,
             issued_at=issued_at,
             sources={"rab_version_id": version.id},
-            summary=f"{number} — {source.rab.title}",
+            summary=f"{number} · {source.rab.title}",
         )
     except IntegrityError:
         # A concurrent request with the same key won the race: replay its document.

@@ -28,14 +28,14 @@ export function SystemStatus() {
       className="rounded-lg border border-border bg-surface"
     >
       <header className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 id="system-status-title" className="text-sm font-semibold">
+        <h2 id="system-status-title" className="text-[15px] font-semibold">
           Status sistem
         </h2>
         <button
           type="button"
           onClick={() => void refetch()}
           disabled={isFetching}
-          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs text-muted hover:bg-surface-muted disabled:opacity-50"
+          className="-my-1.5 -mr-2 inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium text-muted hover:bg-surface-muted hover:text-foreground disabled:opacity-50 sm:min-h-8"
         >
           <RefreshCw aria-hidden className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
           Periksa ulang
@@ -61,26 +61,28 @@ export function SystemStatus() {
       )}
 
       {data && (
-        <dl className="divide-y divide-border text-sm">
-          <Row icon={Server} label="API">
-            <StatusBadge tone={data.status === "ok" ? "success" : "warning"}>
-              {data.status === "ok" ? "Normal" : "Terganggu"}
-            </StatusBadge>
-          </Row>
-          <Row icon={Database} label="Database">
-            <StatusBadge tone={COMPONENT_LABEL[data.database].tone}>
-              {COMPONENT_LABEL[data.database].text}
-            </StatusBadge>
-          </Row>
-          <Row icon={Bot} label="AI lokal (Hermes)">
-            <StatusBadge tone={COMPONENT_LABEL[data.ai].tone}>
-              {data.ai === "error" ? "Tidak tersedia" : COMPONENT_LABEL[data.ai].text}
-            </StatusBadge>
-          </Row>
+        <>
+          <dl className="divide-y divide-border border-b border-border text-sm">
+            <Row icon={Server} label="API">
+              <StatusBadge tone={data.status === "ok" ? "success" : "warning"}>
+                {data.status === "ok" ? "Normal" : "Terganggu"}
+              </StatusBadge>
+            </Row>
+            <Row icon={Database} label="Database">
+              <StatusBadge tone={COMPONENT_LABEL[data.database].tone}>
+                {COMPONENT_LABEL[data.database].text}
+              </StatusBadge>
+            </Row>
+            <Row icon={Bot} label="AI lokal (Hermes)">
+              <StatusBadge tone={COMPONENT_LABEL[data.ai].tone}>
+                {data.ai === "error" ? "Tidak tersedia" : COMPONENT_LABEL[data.ai].text}
+              </StatusBadge>
+            </Row>
+          </dl>
           <p className="px-4 py-2 text-xs text-muted">
             Versi {data.version} · {data.environment} · diperiksa {formatTanggalWaktu(data.time)}
           </p>
-        </dl>
+        </>
       )}
     </section>
   );

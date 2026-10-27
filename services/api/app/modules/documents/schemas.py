@@ -75,6 +75,21 @@ class DocumentSettingsOut(DocumentSettingsFields):
     updated_at: datetime | None
 
 
+class LetterheadOut(BaseModel):
+    """The organization's letterhead image (metadata; the PNG itself is a separate download)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    filename: str
+    content_type: str
+    size_bytes: int
+    sha256: str
+    width_px: int
+    height_px: int
+    uploaded_at: datetime = Field(validation_alias="created_at")
+    uploaded_by: UserBrief | None
+
+
 class FileOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

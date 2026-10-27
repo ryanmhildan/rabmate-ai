@@ -51,7 +51,7 @@ def number(value: str | Decimal, *, min_places: int = 0, max_places: int = 2) ->
 def money(value: str | Decimal | None, currency: str = "IDR") -> str:
     """'Rp 1.250.000' for whole amounts, 'Rp 1.250.000,50' when there are cents."""
     if value is None:
-        return "—"
+        return "-"
     amount = Decimal(value)
     places = 2 if amount != amount.to_integral_value() else 0
     formatted = number(amount, min_places=places, max_places=2)
@@ -62,7 +62,7 @@ def money(value: str | Decimal | None, currency: str = "IDR") -> str:
 def unit_price(value: str | Decimal | None, currency: str = "IDR") -> str:
     """Unit prices keep up to 4 decimals (NUMERIC(20,4)); a fraction shows at least 2 (cents)."""
     if value is None:
-        return "—"
+        return "-"
     amount = Decimal(value)
     places = 0 if amount == amount.to_integral_value() else 2
     prefix = "Rp" if currency == "IDR" else currency
@@ -80,7 +80,7 @@ def percent(value: str | Decimal) -> str:
 def tanggal(value: str | date | datetime | None) -> str:
     """'19 Oktober 2026'. Datetimes are shown in Asia/Jakarta."""
     if value is None:
-        return "—"
+        return "-"
     if isinstance(value, str):
         value = datetime.fromisoformat(value) if "T" in value else date.fromisoformat(value)
     if isinstance(value, datetime):
@@ -91,7 +91,7 @@ def tanggal(value: str | date | datetime | None) -> str:
 def tanggal_waktu(value: str | datetime | None) -> str:
     """'19 Oktober 2026 pukul 03.14 WIB'."""
     if value is None:
-        return "—"
+        return "-"
     moment = datetime.fromisoformat(value) if isinstance(value, str) else value
     local = moment.astimezone(JAKARTA)
     return f"{tanggal(local.date())} pukul {local:%H.%M} WIB"
