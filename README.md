@@ -243,12 +243,3 @@ Hasil tinjauan keamanan: [SECURITY.md](docs/SECURITY.md).
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Checklist deployment, uji asap, rollback |
 | [DESIGN.md](DESIGN.md) | Arah visual "Tinta & Stabilo": palet, tipografi, aturan aksen, tema |
 
-## Status
-
-**MVP selesai:** 17 kriteria MVP terpenuhi dan teruji
-([PROJECT_PLAN §6](docs/PROJECT_PLAN.md#6-kriteria-mvp-selesai)), ditambah pembaruan di atas. Belum
-di-deploy ke server publik.
-
-Batasan yang diketahui: OCR (Tesseract) belum dipasang di lingkungan pengembangan; belum ada MFA
-atau reset kata sandi lewat email; rate limit dan background task AI berada di memori satu proses
-API. Detail di [DEPLOYMENT.md](docs/DEPLOYMENT.md#6-batasan-operasional-yang-diketahui).
